@@ -36,4 +36,7 @@ for (const file of eventFiles) {
 	}
 }
 
+// run timer in console
+require('./modules/timer.js')
+
 client.login(token);
