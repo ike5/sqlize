@@ -1,0 +1,10 @@
+const { SlashCommandBuilder } = require("discord.js");
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("user")
+    .setDescription("Get the tag of the current user"),
+  async execute(interaction) {
+    await interaction.reply(`Server name: ${interaction.guild.name}`);
+  },
+};
