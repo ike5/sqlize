@@ -5,6 +5,6 @@ module.exports = {
     .setName("user")
     .setDescription("Get the tag of the current user"),
   async execute(interaction) {
-    await interaction.reply(`Server name: ${interaction.guild.name}`);
+    await interaction.reply(`User: ${interaction.user.tag}`);
   },
 };
