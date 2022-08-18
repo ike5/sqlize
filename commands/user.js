@@ -5,6 +5,9 @@ module.exports = {
     .setName("user")
     .setDescription("Get the tag of the current user"),
   async execute(interaction) {
-    await interaction.reply(`User: ${interaction.user.tag}`);
+    await interaction.reply({
+      content: `User: ${interaction.user.tag}`,
+      ephemeral: true,
+    });
   },
 };

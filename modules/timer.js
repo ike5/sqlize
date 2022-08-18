@@ -1,6 +1,7 @@
 let diffInMinutes = 30;
 var countDownDate = new Date(new Date().getTime() + diffInMinutes * 60000);
-var x = setInterval(function () {
+
+module.exports = setInterval(function () {
   var now = new Date().getTime();
   var distance = countDownDate - now;
 
@@ -19,5 +20,3 @@ var x = setInterval(function () {
     console.log("Expired");
   }
 }, 1000);
-
-module.exports = x;
