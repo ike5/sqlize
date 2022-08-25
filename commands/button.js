@@ -37,7 +37,9 @@ module.exports = {
       .setDescription("Some description here");
 
     await interaction.reply({
-      content: "Pong!",
+      content: {
+        interaction
+      },
       components: [row],
       ephemeral: true,
       embeds: [embed],
