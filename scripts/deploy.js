@@ -64,6 +64,12 @@ const commands = [
   new SlashCommandBuilder()
     .setName('deletetag')
     .setDescription('Deletes a tag'),
+  new SlashCommandBuilder()
+    .setName('getonlineusers')
+    .setDescription('show all online users'),
+  new SlashCommandBuilder()
+    .setName('checkin')
+    .setDescription('Checks current user in'),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);

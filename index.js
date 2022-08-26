@@ -4,6 +4,7 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { token, pingCommandId } = require('./config.json');
 
 const Sequelize = require('sequelize');
+const { checkServerIdentity } = require('node:tls');
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -67,8 +68,56 @@ const Tags = sequelize.define('tags', {
   },
 });
 
+/**
+ * A CHECK should have the following attributes:
+ * - id
+ * - description of check-in
+ * - description of check-out
+ * - timestamp of check-in
+ * - timestamp of check-out
+ * - username
+ *
+ * Total time should be a calculated query on: (timestamp2 -
+ * timestamp1)
+ *
+ * CATCH ERROR
+ * If you already checked in you will not be able to check
+ * in again and will receive an error message asking for you
+ * to check out.
+ */
+const Checks = sequelize.define(
+  'check',
+  {
+    id: {
+      type: Sequelize.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    ci_description: Sequelize.TEXT,
+    co_description: Sequelize.TEXT,
+    ci_timestamp: Sequelize.TIME,
+    co_timestamp: Sequelize.TIME,
+    username: Sequelize.STRING,
+  },
+  {
+    timestamps: true,
+  },
+  {
+    createdAt: {
+      type: 'TIMESTAMP',
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+      allowNull: false,
+    },
+  },
+  {
+    updatedAt: false,
+  }
+);
+
 client.once('ready', () => {
   Tags.sync();
+  Checks.sync();
+  // sequelize.drop()
   console.log(`Logged in as ${client.user.tag}`);
 });
 
@@ -96,6 +145,14 @@ client.on('interactionCreate', async (interaction) => {
 
       return interaction.reply('Something went wrong with adding a tag.');
     }
+  } else if (commandName === 'checkin') {
+    const ci_option = interaction.options.getString('ci_description');
+    try {
+      const check = await Checks.create({
+        ci_description: ci_option,
+        ci_timestamp: new Date(),
+      });
+    } catch (e) {}
   } else if (commandName === 'tag') {
     const tagName = interaction.options.getString('name');
 
@@ -152,6 +209,10 @@ client.on('interactionCreate', async (interaction) => {
     if (!rowCount) return interaction.reply("That tag doesn't exist.");
 
     return interaction.reply('Tag deleted.');
+  } else if (commandName === 'getonlineusers') {
+    interaction.guild.members.fetch().then((members) => {
+      members.forEach((m) => console.log(m.user.username));
+    });
   } else {
     return interaction.reply('Not a valid command');
   }
