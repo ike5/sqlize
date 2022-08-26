@@ -114,6 +114,38 @@ const Checks = sequelize.define(
   }
 );
 
+const checkins = [
+  {
+    username: 'ike5',
+    ci_description: 'Working on stuff',
+    ci_timestamp: new Date(),
+  },
+  {
+    username: 'ike3422',
+    ci_description: 'hello world',
+    ci_timestamp: new Date(),
+  },
+  {
+    username: 'joel',
+    ci_description: 'another message',
+    ci_timestamp: new Date(),
+  },
+];
+
+// Default
+sequelize.sync({ force: true }).then(() => {
+  Checks.bulkCreate(checkins, { validate: true })
+    .then(() => {
+      console.log('checkins created');
+    })
+    .catch((err) => {
+      console.log('failed to create checkins');
+    })
+    // .finally(() => {
+    //   sequelize.close();
+    // });
+});
+
 client.once('ready', () => {
   Tags.sync();
   Checks.sync();
