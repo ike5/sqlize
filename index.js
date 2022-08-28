@@ -1,42 +1,8 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { token, pingCommandId } = require('./config.json');
+const { Client, GatewayIntentBits } = require('discord.js');
+const { token } = require('./config.json');
+const { Sequelize, DataTypes, Model } = require('sequelize');
 
-const Sequelize = require('sequelize');
-const { checkServerIdentity } = require('node:tls');
-
-// Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
-// // access 'commands' in other files by attaching a commands property
-// client.commands = new Collection();
-// const commandsPath = path.join(__dirname, "commands");
-// const commandFiles = fs
-//   .readdirSync(commandsPath)
-//   .filter((file) => file.endsWith(".js"));
-// for (const file of commandFiles) {
-//   const filePath = path.join(commandsPath, file);
-//   const command = require(filePath);
-//   // Set a new item in the Collection
-//   // With the key as the command name and the value as the exported module
-//   client.commands.set(command.data.name, command);
-// }
-
-// // events
-// const eventsPath = path.join(__dirname, "events");
-// const eventFiles = fs
-//   .readdirSync(eventsPath)
-//   .filter((file) => file.endsWith(".js"));
-// for (const file of eventFiles) {
-//   const filePath = path.join(eventsPath, file);
-//   const event = require(filePath);
-//   if (event.once) {
-//     client.once(event.name, (...args) => event.execute(...args));
-//   } else {
-//     client.on(event.name, (...args) => event.execute(...args));
-//   }
-// }
 
 const sequelize = new Sequelize('database', 'user', 'password', {
   host: 'localhost',
@@ -46,208 +12,222 @@ const sequelize = new Sequelize('database', 'user', 'password', {
   storage: 'database.sqlite',
 });
 
-/*
- * equivalent to: CREATE TABLE tags(
- * name VARCHAR(255) UNIQUE,
- * description TEXT,
- * username VARCHAR(255),
- * usage_count  INT NOT NULL DEFAULT 0
- * );
- */
-const Tags = sequelize.define('tags', {
-  name: {
-    type: Sequelize.STRING,
-    unique: true,
-  },
-  description: Sequelize.TEXT,
-  username: Sequelize.STRING,
-  usage_count: {
-    type: Sequelize.INTEGER,
-    defaultValue: 0,
-    allowNull: false,
-  },
-});
+// Start Section: Build Tables //
+//***************************************************/
 
 /**
- * A CHECK should have the following attributes:
- * - id
- * - description of check-in
- * - description of check-out
- * - timestamp of check-in
- * - timestamp of check-out
- * - username
- *
- * Total time should be a calculated query on: (timestamp2 -
- * timestamp1)
- *
- * CATCH ERROR
- * If you already checked in you will not be able to check
- * in again and will receive an error message asking for you
- * to check out.
+ * Associations:
+ * - 1:M with UserTrophies
  */
-const Checks = sequelize.define(
-  'check',
+class Trophy extends Model {
+  getAllTrophies() {}
+}
+Trophy.init(
   {
-    id: {
-      type: Sequelize.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    ci_description: Sequelize.TEXT,
-    co_description: Sequelize.TEXT,
-    ci_timestamp: Sequelize.TIME,
-    co_timestamp: Sequelize.TIME,
-    username: Sequelize.STRING,
+    trophy_name: DataTypes.STRING,
+    description: DataTypes.TEXT,
+    date_earned: DataTypes.DATE,
   },
-  {
-    timestamps: true,
-  },
-  {
-    createdAt: {
-      type: 'TIMESTAMP',
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
-      allowNull: false,
-    },
-  },
-  {
-    updatedAt: false,
-  }
+  { sequelize, modelName: 'Trophy', timestamps: false }
 );
 
-const checkins = [
+/**
+ * Associations:
+ * - 1:M with Logs
+ * - 1:M with Friends
+ */
+class User extends Model {
+  getAllUsers() {}
+}
+User.init(
   {
-    username: 'ike5',
-    ci_description: 'Working on stuff',
-    ci_timestamp: new Date(),
+    username: DataTypes.TEXT,
+    date_joined: DataTypes.DATE,
+    time_studied: DataTypes.TIME,
+    phone: DataTypes.TEXT,
+    checkins: DataTypes.INTEGER,
+    checkouts: DataTypes.INTEGER,
   },
-  {
-    username: 'ike3422',
-    ci_description: 'hello world',
-    ci_timestamp: new Date(),
-  },
-  {
-    username: 'joel',
-    ci_description: 'another message',
-    ci_timestamp: new Date(),
-  },
-];
+  { sequelize, modelName: 'User', timestamps: false }
+);
 
-// Default
-sequelize.sync({ force: true }).then(() => {
-  Checks.bulkCreate(checkins, { validate: true })
-    .then(() => {
-      console.log('checkins created');
-    })
-    .catch((err) => {
-      console.log('failed to create checkins');
-    })
-    // .finally(() => {
-    //   sequelize.close();
-    // });
+/**
+ * Associations:
+ * - 1:M with User
+ */
+class Log extends Model {}
+Log.init(
+  {
+    ci_description: DataTypes.TEXT,
+    co_description: DataTypes.TEXT,
+    ci_timestamp: DataTypes.TIME,
+    co_timestamp: DataTypes.TIME,
+  },
+  { sequelize, modelName: 'Log', timestamps: false }
+);
+
+class UserTrophies extends Model {}
+UserTrophies.init(
+  {
+    UserId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: User,
+        key: 'id',
+      },
+    },
+    TrophyId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: Trophy,
+        key: 'id',
+      },
+    },
+  },
+  { sequelize, modelName: 'UserTrophies', timestamps: false }
+);
+Trophy.belongsToMany(User, {
+  through: UserTrophies,
+});
+User.belongsToMany(Trophy, {
+  through: UserTrophies,
 });
 
-client.once('ready', () => {
-  Tags.sync();
-  Checks.sync();
-  // sequelize.drop()
-  console.log(`Logged in as ${client.user.tag}`);
-});
+User.hasMany(Log);
+Log.belongsTo(User);
 
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+class Friends extends Model {}
+Friends.init(
+  {
+    UserId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: User,
+        key: 'id',
+      },
+    },
+    FriendId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: User,
+        key: 'id',
+      },
+    },
+  },
+  { sequelize, modelName: 'Friends', timestamps: false }
+);
+User.belongsToMany(User, { as: 'Parent', through: Friends });
+User.belongsToMany(User, { as: 'Sibling', through: Friends });
 
-  const { commandName } = interaction;
+// End Section: Build Tables //
+//***************************************************/
 
-  if (commandName === 'addtag') {
-    const tagName = interaction.options.getString('name');
-    const tagDescription = interaction.options.getString('description');
-    try {
-      // equivalent to: INSERT INTO tags (name, description, username) values (?, ?, ?);
-      const tag = await Tags.create({
-        name: tagName,
-        description: tagDescription,
-        username: interaction.user.username,
-      });
+(async () => {
+  await sequelize.sync({ force: true });
+})();
 
-      return interaction.reply(`Tag ${tag.name} added.`);
-    } catch (error) {
-      if (error.name === 'SequelizeUniqueConstraintError') {
-        return interaction.reply('That tag already exists.');
-      }
+// client.once('ready', () => {
+//   Tags.sync();
+//   Checks.sync();
+//   // sequelize.drop()
+//   console.log(`Logged in as ${client.user.tag}`);
+// });
 
-      return interaction.reply('Something went wrong with adding a tag.');
-    }
-  } else if (commandName === 'checkin') {
-    const ci_option = interaction.options.getString('ci_description');
-    try {
-      const check = await Checks.create({
-        ci_description: ci_option,
-        ci_timestamp: new Date(),
-      });
-    } catch (e) {}
-  } else if (commandName === 'tag') {
-    const tagName = interaction.options.getString('name');
+// client.on('interactionCreate', async (interaction) => {
+//   if (!interaction.isChatInputCommand()) return;
 
-    // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
-    const tag = await Tags.findOne({ where: { name: tagName } });
+//   const { commandName } = interaction;
 
-    if (tag) {
-      // equivalent to: UPDATE tags SET usage_count = usage_count + 1 WHERE name = 'tagName';
-      tag.increment('usage_count');
+//   if (commandName === 'addtag') {
+//     const tagName = interaction.options.getString('name');
+//     const tagDescription = interaction.options.getString('description');
+//     try {
+//       // equivalent to: INSERT INTO tags (name, description, username) values (?, ?, ?);
+//       const tag = await Tags.create({
+//         name: tagName,
+//         description: tagDescription,
+//         username: interaction.user.username,
+//       });
 
-      return interaction.reply(tag.get('description'));
-    }
+//       return interaction.reply(`Tag ${tag.name} added.`);
+//     } catch (error) {
+//       if (error.name === 'SequelizeUniqueConstraintError') {
+//         return interaction.reply('That tag already exists.');
+//       }
 
-    return interaction.reply(`Could not find tag: ${tagName}`);
-  } else if (commandName === 'edittag') {
-    const tagName = interaction.options.getString('name');
-    const tagDescription = interaction.options.getString('description');
+//       return interaction.reply('Something went wrong with adding a tag.');
+//     }
+//   } else if (commandName === 'checkin') {
+//     const ci_option = interaction.options.getString('ci_description');
+//     try {
+//       const check = await Checks.create({
+//         ci_description: ci_option,
+//         ci_timestamp: new Date(),
+//       });
+//     } catch (e) {}
+//   } else if (commandName === 'tag') {
+//     const tagName = interaction.options.getString('name');
 
-    // equivalent to: UPDATE tags (description) values (?) WHERE name='?';
-    const affectedRows = await Tags.update(
-      { description: tagDescription },
-      { where: { name: tagName } }
-    );
+//     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
+//     const tag = await Tags.findOne({ where: { name: tagName } });
 
-    if (affectedRows > 0) {
-      return interaction.reply(`Tag ${tagName} was edited.`);
-    }
+//     if (tag) {
+//       // equivalent to: UPDATE tags SET usage_count = usage_count + 1 WHERE name = 'tagName';
+//       tag.increment('usage_count');
 
-    return interaction.reply(`Could not find a tag with name ${tagName}.`);
-  } else if (commandName === 'taginfo') {
-    const tagName = interaction.options.getString('name');
+//       return interaction.reply(tag.get('description'));
+//     }
 
-    // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
-    const tag = await Tags.findOne({ where: { name: tagName } });
+//     return interaction.reply(`Could not find tag: ${tagName}`);
+//   } else if (commandName === 'edittag') {
+//     const tagName = interaction.options.getString('name');
+//     const tagDescription = interaction.options.getString('description');
 
-    if (tag) {
-      return interaction.reply(
-        `${tagName} was created by ${tag.username} at ${tag.createdAt} and has been used ${tag.usage_count} times.`
-      );
-    }
+//     // equivalent to: UPDATE tags (description) values (?) WHERE name='?';
+//     const affectedRows = await Tags.update(
+//       { description: tagDescription },
+//       { where: { name: tagName } }
+//     );
 
-    return interaction.reply(`Could not find tag: ${tagName}`);
-  } else if (commandName === 'showtags') {
-    // equivalent to: SELECT name FROM tags;
-    const tagList = await Tags.findAll({ attributes: ['name'] });
-    const tagString = tagList.map((t) => t.name).join(', ') || 'No tags set.';
+//     if (affectedRows > 0) {
+//       return interaction.reply(`Tag ${tagName} was edited.`);
+//     }
 
-    return interaction.reply(`List of tags: ${tagString}`);
-  } else if (commandName === 'deletetag') {
-    const tagName = interaction.options.getString('name');
-    // equivalent to: DELETE from tags WHERE name = ?;
-    const rowCount = await Tags.destroy({ where: { name: tagName } });
+//     return interaction.reply(`Could not find a tag with name ${tagName}.`);
+//   } else if (commandName === 'taginfo') {
+//     const tagName = interaction.options.getString('name');
 
-    if (!rowCount) return interaction.reply("That tag doesn't exist.");
+//     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
+//     const tag = await Tags.findOne({ where: { name: tagName } });
 
-    return interaction.reply('Tag deleted.');
-  } else if (commandName === 'getonlineusers') {
-    interaction.guild.members.fetch().then((members) => {
-      members.forEach((m) => console.log(m.user.username));
-    });
-  } else {
-    return interaction.reply('Not a valid command');
-  }
-});
+//     if (tag) {
+//       return interaction.reply(
+//         `${tagName} was created by ${tag.username} at ${tag.createdAt} and has been used ${tag.usage_count} times.`
+//       );
+//     }
 
-client.login(token);
+//     return interaction.reply(`Could not find tag: ${tagName}`);
+//   } else if (commandName === 'showtags') {
+//     // equivalent to: SELECT name FROM tags;
+//     const tagList = await Tags.findAll({ attributes: ['name'] });
+//     const tagString = tagList.map((t) => t.name).join(', ') || 'No tags set.';
+
+//     return interaction.reply(`List of tags: ${tagString}`);
+//   } else if (commandName === 'deletetag') {
+//     const tagName = interaction.options.getString('name');
+//     // equivalent to: DELETE from tags WHERE name = ?;
+//     const rowCount = await Tags.destroy({ where: { name: tagName } });
+
+//     if (!rowCount) return interaction.reply("That tag doesn't exist.");
+
+//     return interaction.reply('Tag deleted.');
+//   } else if (commandName === 'getonlineusers') {
+//     interaction.guild.members.fetch().then((members) => {
+//       members.forEach((m) => console.log(m.user.username));
+//     });
+//   } else {
+//     return interaction.reply('Not a valid command');
+//   }
+// });
+
+// client.login(token);
