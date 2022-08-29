@@ -76,3 +76,4 @@ const sequelize = new Sequelize('database', 'user', 'password', {
 //     Promise.all(works).then(() => sequelize.close());
 //     console.log('finish');
 //   });
+

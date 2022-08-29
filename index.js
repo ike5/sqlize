@@ -1,6 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
-const { Sequelize, DataTypes, Model } = require('sequelize');
+const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -41,7 +41,12 @@ class User extends Model {
 }
 User.init(
   {
-    username: DataTypes.TEXT,
+    discordId: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+    },
+    username: DataTypes.STRING,
+    discordNickname: DataTypes.STRING,
     date_joined: DataTypes.DATE,
     time_studied: DataTypes.TIME,
     phone: DataTypes.TEXT,
@@ -70,10 +75,10 @@ class UserTrophies extends Model {}
 UserTrophies.init(
   {
     UserId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       references: {
         model: User,
-        key: 'id',
+        key: 'discordId',
       },
     },
     TrophyId: {
@@ -86,12 +91,8 @@ UserTrophies.init(
   },
   { sequelize, modelName: 'UserTrophies', timestamps: false }
 );
-Trophy.belongsToMany(User, {
-  through: UserTrophies,
-});
-User.belongsToMany(Trophy, {
-  through: UserTrophies,
-});
+Trophy.belongsToMany(User, { through: UserTrophies });
+User.belongsToMany(Trophy, { through: UserTrophies });
 
 User.hasMany(Log);
 Log.belongsTo(User);
@@ -100,17 +101,17 @@ class Friends extends Model {}
 Friends.init(
   {
     UserId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       references: {
         model: User,
-        key: 'id',
+        key: 'discordId',
       },
     },
     FriendId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       references: {
         model: User,
-        key: 'id',
+        key: 'discordId',
       },
     },
   },
@@ -122,112 +123,190 @@ User.belongsToMany(User, { as: 'Sibling', through: Friends });
 // End Section: Build Tables //
 //***************************************************/
 
-(async () => {
-  await sequelize.sync({ force: true });
-})();
+client.once('ready', async () => {
+  await sequelize.sync({ force: false });
 
-// client.once('ready', () => {
-//   Tags.sync();
-//   Checks.sync();
-//   // sequelize.drop()
-//   console.log(`Logged in as ${client.user.tag}`);
-// });
+  // let allusers = [
+  //   { discordId: 'Jane Brown' },
+  //   { discordId: 'Lucia Benner' },
+  //   { discordId: 'Peter Novak' },
+  //   { discordId: 'Janet Peterson' },
+  //   { discordId: 'Lucy in the Sky' },
+  //   { discordId: 'Marabel Peach' },
+  //   { discordId: 'Ike Maldonado' },
+  //   { discordId: 'Lamponela Samonela' },
+  // ];
 
-// client.on('interactionCreate', async (interaction) => {
-//   if (!interaction.isChatInputCommand()) return;
+  // const u = await User.bulkCreate(allusers);
 
-//   const { commandName } = interaction;
+  console.log(`Logged in as ${client.user.tag}`);
+});
 
-//   if (commandName === 'addtag') {
-//     const tagName = interaction.options.getString('name');
-//     const tagDescription = interaction.options.getString('description');
-//     try {
-//       // equivalent to: INSERT INTO tags (name, description, username) values (?, ?, ?);
-//       const tag = await Tags.create({
-//         name: tagName,
-//         description: tagDescription,
-//         username: interaction.user.username,
-//       });
+// START HELPER FUNCTIONS //
+//--------------------------------------------------//
 
-//       return interaction.reply(`Tag ${tag.name} added.`);
-//     } catch (error) {
-//       if (error.name === 'SequelizeUniqueConstraintError') {
-//         return interaction.reply('That tag already exists.');
-//       }
+/**
+ * Checks to see if a user already exists in the database.
+ *
+ * Parameters:
+ *  - discordId
+ * Returns:
+ *  - true if user doesn't exist
+ */
 
-//       return interaction.reply('Something went wrong with adding a tag.');
-//     }
-//   } else if (commandName === 'checkin') {
-//     const ci_option = interaction.options.getString('ci_description');
-//     try {
-//       const check = await Checks.create({
-//         ci_description: ci_option,
-//         ci_timestamp: new Date(),
-//       });
-//     } catch (e) {}
-//   } else if (commandName === 'tag') {
-//     const tagName = interaction.options.getString('name');
+function isIdUnique(id) {
+  return User.count({
+    where: {
+      discordId: id,
+    },
+  }).then((count) => {
+    if (count != 0) {
+      return false;
+    }
+    return true;
+  });
+}
 
-//     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
-//     const tag = await Tags.findOne({ where: { name: tagName } });
+// END HELPER FUNCTIONS //
+//--------------------------------------------------//
 
-//     if (tag) {
-//       // equivalent to: UPDATE tags SET usage_count = usage_count + 1 WHERE name = 'tagName';
-//       tag.increment('usage_count');
+// START INTERACTION SECTION //
+//***************************************************/
 
-//       return interaction.reply(tag.get('description'));
-//     }
+// Create interaction variable for slash commands
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+  const { commandName } = interaction;
 
-//     return interaction.reply(`Could not find tag: ${tagName}`);
-//   } else if (commandName === 'edittag') {
-//     const tagName = interaction.options.getString('name');
-//     const tagDescription = interaction.options.getString('description');
+  // The ADDTAG command needs to be removed. No use
+  if (commandName === 'addtag') {
+    const tagName = interaction.options.getString('name');
+    const tagDescription = interaction.options.getString('description');
+    try {
+      // equivalent to: INSERT INTO tags (name, description, username) values (?, ?, ?);
+      const tag = await Tags.create({
+        name: tagName,
+        description: tagDescription,
+        username: interaction.user.username,
+      });
 
-//     // equivalent to: UPDATE tags (description) values (?) WHERE name='?';
-//     const affectedRows = await Tags.update(
-//       { description: tagDescription },
-//       { where: { name: tagName } }
-//     );
+      return interaction.reply(`Tag ${tag.name} added.`);
+    } catch (error) {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return interaction.reply('That tag already exists.');
+      }
 
-//     if (affectedRows > 0) {
-//       return interaction.reply(`Tag ${tagName} was edited.`);
-//     }
+      return interaction.reply('Something went wrong with adding a tag.');
+    }
 
-//     return interaction.reply(`Could not find a tag with name ${tagName}.`);
-//   } else if (commandName === 'taginfo') {
-//     const tagName = interaction.options.getString('name');
+    /**
+     * discordInfo = {discordId, ci_description, ci_timestamp}
+     * if user exists
+     *  if check-in doesn't exist
+     *    create check-in
+     *      increment number of check-ins by 1
+     *      total_time = co_time - ci_time
+     *      time_studied += total_time
+     */
+  } else if (commandName === 'checkin') {
+    const ci_option = interaction.options.getString('description');
+    const interactionUser = await interaction.guild.members.fetch(
+      interaction.user.id
+    );
+    const nickName = interactionUser.nickname;
+    const userName = interactionUser.user.username;
+    const userId = interactionUser.id;
 
-//     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
-//     const tag = await Tags.findOne({ where: { name: tagName } });
+    console.log(
+      `Nickname: ${nickName}\nUsername: ${userName}\nUserId: ${userId}`
+    );
 
-//     if (tag) {
-//       return interaction.reply(
-//         `${tagName} was created by ${tag.username} at ${tag.createdAt} and has been used ${tag.usage_count} times.`
-//       );
-//     }
+    // creates a new user if id is unique (i.e. doesnt' exist yet)
+    isIdUnique(userId).then((isUnique) => {
+      if (isUnique) {
+        User.create({
+          discordId: userId,
+          discordNickname: nickName,
+          username: userName,
+          date_joined: new Date(),
+        });
+      }
+    });
 
-//     return interaction.reply(`Could not find tag: ${tagName}`);
-//   } else if (commandName === 'showtags') {
-//     // equivalent to: SELECT name FROM tags;
-//     const tagList = await Tags.findAll({ attributes: ['name'] });
-//     const tagString = tagList.map((t) => t.name).join(', ') || 'No tags set.';
+    try {
+      const checkin = await Log.create({
+        ci_description: ci_option,
+        ci_timestamp: new Date(),
+        UserDiscordId: userId,
+      }).then((v) => {
+        console.log(`${v} was created!`);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  } else if (commandName === 'tag') {
+    const tagName = interaction.options.getString('name');
 
-//     return interaction.reply(`List of tags: ${tagString}`);
-//   } else if (commandName === 'deletetag') {
-//     const tagName = interaction.options.getString('name');
-//     // equivalent to: DELETE from tags WHERE name = ?;
-//     const rowCount = await Tags.destroy({ where: { name: tagName } });
+    // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
+    const tag = await Tags.findOne({ where: { name: tagName } });
 
-//     if (!rowCount) return interaction.reply("That tag doesn't exist.");
+    if (tag) {
+      // equivalent to: UPDATE tags SET usage_count = usage_count + 1 WHERE name = 'tagName';
+      tag.increment('usage_count');
 
-//     return interaction.reply('Tag deleted.');
-//   } else if (commandName === 'getonlineusers') {
-//     interaction.guild.members.fetch().then((members) => {
-//       members.forEach((m) => console.log(m.user.username));
-//     });
-//   } else {
-//     return interaction.reply('Not a valid command');
-//   }
-// });
+      return interaction.reply(tag.get('description'));
+    }
 
-// client.login(token);
+    return interaction.reply(`Could not find tag: ${tagName}`);
+  } else if (commandName === 'edittag') {
+    const tagName = interaction.options.getString('name');
+    const tagDescription = interaction.options.getString('description');
+
+    // equivalent to: UPDATE tags (description) values (?) WHERE name='?';
+    const affectedRows = await Tags.update(
+      { description: tagDescription },
+      { where: { name: tagName } }
+    );
+
+    if (affectedRows > 0) {
+      return interaction.reply(`Tag ${tagName} was edited.`);
+    }
+
+    return interaction.reply(`Could not find a tag with name ${tagName}.`);
+  } else if (commandName === 'taginfo') {
+    const tagName = interaction.options.getString('name');
+
+    // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
+    const tag = await Tags.findOne({ where: { name: tagName } });
+
+    if (tag) {
+      return interaction.reply(
+        `${tagName} was created by ${tag.username} at ${tag.createdAt} and has been used ${tag.usage_count} times.`
+      );
+    }
+
+    return interaction.reply(`Could not find tag: ${tagName}`);
+  } else if (commandName === 'showtags') {
+    // equivalent to: SELECT name FROM tags;
+    const tagList = await Tags.findAll({ attributes: ['name'] });
+    const tagString = tagList.map((t) => t.name).join(', ') || 'No tags set.';
+
+    return interaction.reply(`List of tags: ${tagString}`);
+  } else if (commandName === 'deletetag') {
+    const tagName = interaction.options.getString('name');
+    // equivalent to: DELETE from tags WHERE name = ?;
+    const rowCount = await Tags.destroy({ where: { name: tagName } });
+
+    if (!rowCount) return interaction.reply("That tag doesn't exist.");
+
+    return interaction.reply('Tag deleted.');
+  } else if (commandName === 'getonlineusers') {
+    interaction.guild.members.fetch().then((members) => {
+      members.forEach((m) => console.log(m.user.username));
+    });
+  } else {
+    return interaction.reply('Not a valid command');
+  }
+});
+
+client.login(token);

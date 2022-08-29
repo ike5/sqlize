@@ -69,7 +69,13 @@ const commands = [
     .setDescription('show all online users'),
   new SlashCommandBuilder()
     .setName('checkin')
-    .setDescription('Checks current user in'),
+    .setDescription('Checks current user in')
+    .addStringOption((option) =>
+      option
+        .setName('description')
+        .setDescription('Check in description')
+        .setRequired(true)
+    ),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);
