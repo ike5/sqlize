@@ -52,6 +52,7 @@ User.init(
     phone: DataTypes.TEXT,
     checkins: DataTypes.INTEGER,
     checkouts: DataTypes.INTEGER,
+    friendList: DataTypes.TEXT,
   },
   { sequelize, modelName: 'User', timestamps: false }
 );
@@ -150,10 +151,10 @@ client.once('ready', async () => {
  *
  * Parameters:
  *  - discordId
+ *
  * Returns:
  *  - true if user doesn't exist
  */
-
 function isIdUnique(id) {
   return User.count({
     where: {
@@ -221,7 +222,9 @@ client.on('interactionCreate', async (interaction) => {
       `Nickname: ${nickName}\nUsername: ${userName}\nUserId: ${userId}`
     );
 
-    // creates a new user if id is unique (i.e. doesnt' exist yet)
+
+
+    // creates a new user if id isn't found in database
     isIdUnique(userId).then((isUnique) => {
       if (isUnique) {
         User.create({
@@ -234,7 +237,7 @@ client.on('interactionCreate', async (interaction) => {
     });
 
     try {
-      const checkin = await Log.create({
+      await Log.create({
         ci_description: ci_option,
         ci_timestamp: new Date(),
         UserDiscordId: userId,
