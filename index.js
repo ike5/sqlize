@@ -2,7 +2,17 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildMessageTyping,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 const sequelize = new Sequelize('database', 'user', 'password', {
   host: 'localhost',
@@ -126,20 +136,6 @@ User.belongsToMany(User, { as: 'Sibling', through: Friends });
 
 client.once('ready', async () => {
   await sequelize.sync({ force: false });
-
-  // let allusers = [
-  //   { discordId: 'Jane Brown' },
-  //   { discordId: 'Lucia Benner' },
-  //   { discordId: 'Peter Novak' },
-  //   { discordId: 'Janet Peterson' },
-  //   { discordId: 'Lucy in the Sky' },
-  //   { discordId: 'Marabel Peach' },
-  //   { discordId: 'Ike Maldonado' },
-  //   { discordId: 'Lamponela Samonela' },
-  // ];
-
-  // const u = await User.bulkCreate(allusers);
-
   console.log(`Logged in as ${client.user.tag}`);
 });
 
@@ -221,8 +217,6 @@ client.on('interactionCreate', async (interaction) => {
     console.log(
       `Nickname: ${nickName}\nUsername: ${userName}\nUserId: ${userId}`
     );
-
-
 
     // creates a new user if id isn't found in database
     isIdUnique(userId).then((isUnique) => {
@@ -309,6 +303,23 @@ client.on('interactionCreate', async (interaction) => {
     });
   } else {
     return interaction.reply('Not a valid command');
+  }
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) {
+    console.log('a bot');
+  } else {
+    console.log('not a bot');
+  }
+
+  if (message.content === '!online') {
+    const onlineMembers = (await message.guild.members.fetch()).filter(
+      (member) => {
+        console.log(member.toJSON());
+      }
+    );
+    return message.channel.send('hello');
   }
 });
 
