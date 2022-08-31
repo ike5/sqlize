@@ -151,7 +151,7 @@ client.once('ready', async () => {
  * Returns:
  *  - true if user doesn't exist
  */
-function isIdUnique(id) {
+async function isIdUnique(id) {
   return User.count({
     where: {
       discordId: id,
@@ -205,7 +205,7 @@ client.on('interactionCreate', async (interaction) => {
      *      total_time = co_time - ci_time
      *      time_studied += total_time
      */
-  } else if (commandName === 'checkin') {
+  } else if (commandName === 'check') {
     const ci_option = interaction.options.getString('description');
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
@@ -214,32 +214,87 @@ client.on('interactionCreate', async (interaction) => {
     const userName = interactionUser.user.username;
     const userId = interactionUser.id;
 
-    console.log(
-      `Nickname: ${nickName}\nUsername: ${userName}\nUserId: ${userId}`
-    );
+    console.log(`Username: ${userName}\nUserId: ${userId}`);
 
     // creates a new user if id isn't found in database
-    isIdUnique(userId).then((isUnique) => {
+    await isIdUnique(userId).then((isUnique) => {
       if (isUnique) {
-        User.create({
+        const u = User.create({
           discordId: userId,
           discordNickname: nickName,
           username: userName,
           date_joined: new Date(),
         });
+        console.log(`${u} has been created!`);
       }
     });
 
     try {
-      await Log.create({
-        ci_description: ci_option,
+      const u = await Log.create({
+        ci_description: JSON.stringify(ci_option.split(',')),
         ci_timestamp: new Date(),
         UserDiscordId: userId,
-      }).then((v) => {
-        console.log(`${v} was created!`);
       });
+      let parsedDescription = `CHECK-IN:\n`;
+      JSON.parse(u.ci_description).forEach((element) => {
+        parsedDescription += `- ${element.trim()}\n`;
+      });
+
+      console.log(parsedDescription);
+      interaction.reply(`${parsedDescription}`);
+      console.log(`${userName} called the 'check' slash command`);
     } catch (e) {
       console.log(e);
+    }
+  } else if (commandName === 'list') {
+    const interactionUser = await interaction.guild.members.fetch(
+      interaction.user.id
+    );
+    const nickName = interactionUser.nickname;
+    const userName = interactionUser.user.username;
+    const userId = interactionUser.id;
+
+    // creates a new user if id isn't found in database
+    await isIdUnique(userId).then((isUnique) => {
+      if (isUnique) {
+        const u = User.create({
+          discordId: userId,
+          discordNickname: nickName,
+          username: userName,
+          date_joined: new Date(),
+        });
+        console.log(`${u} has been created!`);
+      }
+    });
+
+    try {
+      const u = await Log.findAll({
+        where: {
+          UserDiscordId: `${userId}`,
+        },
+      });
+
+      let list = `\n`;
+
+      u.forEach((element) => {
+        let l = `\n`;
+        JSON.parse(element.ci_description).forEach((e) => {
+          l += `\t- ${e.trim()}\n`;
+        });
+
+        let date = new Date(element.ci_timestamp).toLocaleDateString('en-US');
+        let time = new Date(element.ci_timestamp).toLocaleTimeString('en-US');
+        list += `${date} *${time}* ${l}\n`;
+      });
+      // console.log(JSON.parse(u))
+      interaction.reply({ content: list, ephemeral: true });
+      console.log(`${userName} called the 'list' slash command`);
+    } catch (err) {
+      console.error(err);
+      interaction.reply({
+        content: `Something went wrong.\nPlease wait a moment then try again.`,
+        ephemeral: true,
+      });
     }
   } else if (commandName === 'tag') {
     const tagName = interaction.options.getString('name');
@@ -330,6 +385,21 @@ client.on('messageCreate', async (message) => {
       online += `${element.status}\t\t${element.name}\n`;
     });
     message.reply(online);
+  }
+
+  // Lists all users who've made checkins
+  if (message.content === '!allusers') {
+    let registeredUsers = 'Registered users:\n';
+
+    const u = await User.findAll({
+      attributes: ['username'],
+    });
+
+    u.forEach((element) => {
+      registeredUsers += `${element.username}\n`;
+    });
+
+    await message.reply({ content: `${registeredUsers}` });
   }
 });
 
