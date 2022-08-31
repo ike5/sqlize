@@ -314,12 +314,22 @@ client.on('messageCreate', async (message) => {
   }
 
   if (message.content === '!online') {
-    const onlineMembers = (await message.guild.members.fetch()).filter(
-      (member) => {
-        console.log(member.toJSON());
-      }
-    );
-    return message.channel.send('hello');
+    let allMembers = await message.guild.members.fetch();
+    let onlineUsers = allMembers.filter((member) => member.presence);
+
+    let mOnlineUsers = onlineUsers.map((m) => {
+      return {
+        status: m.presence.status,
+        name: m.user.username,
+      };
+    });
+
+    let online = 'status\t\tusername\n-------\t\t-----------\n';
+
+    mOnlineUsers.forEach((element) => {
+      online += `${element.status}\t\t${element.name}\n`;
+    });
+    message.reply(online);
   }
 });
 

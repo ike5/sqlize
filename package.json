@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "nodemon index.js"
+  },
   "main": "index.js",
   "dependencies": {
     "@discordjs/rest": "^1.0.1",
