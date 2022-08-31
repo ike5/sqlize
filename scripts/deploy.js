@@ -64,9 +64,9 @@ const commands = [
   // new SlashCommandBuilder()
   //   .setName('deletetag')
   //   .setDescription('Deletes a tag'),
-  // new SlashCommandBuilder()
-  //   .setName('getonlineusers')
-  //   .setDescription('show all online users'),
+  new SlashCommandBuilder()
+    .setName('online')
+    .setDescription('Shows all online users'),
   new SlashCommandBuilder()
     .setName('check')
     .setDescription('Checks current user in')

@@ -14,6 +14,9 @@ const client = new Client({
   ],
 });
 
+/**
+ * Initialize database in SQLite
+ */
 const sequelize = new Sequelize('database', 'user', 'password', {
   host: 'localhost',
   dialect: 'sqlite',
@@ -134,10 +137,14 @@ User.belongsToMany(User, { as: 'Sibling', through: Friends });
 // End Section: Build Tables //
 //***************************************************/
 
+// START: INITIATE SERVER
+//---------------------------------------------------/
 client.once('ready', async () => {
   await sequelize.sync({ force: false });
   console.log(`Logged in as ${client.user.tag}`);
 });
+// END: INITIATE SERVER
+//---------------------------------------------------/
 
 // START HELPER FUNCTIONS //
 //--------------------------------------------------//
@@ -268,25 +275,27 @@ client.on('interactionCreate', async (interaction) => {
     });
 
     try {
+      // Find all check-ins with a specific userId
       const u = await Log.findAll({
         where: {
           UserDiscordId: `${userId}`,
         },
       });
 
+      // Create a string list of all check-in descriptions
       let list = `\n`;
-
       u.forEach((element) => {
         let l = `\n`;
         JSON.parse(element.ci_description).forEach((e) => {
           l += `\t- ${e.trim()}\n`;
         });
 
+        // Get time posted
         let date = new Date(element.ci_timestamp).toLocaleDateString('en-US');
         let time = new Date(element.ci_timestamp).toLocaleTimeString('en-US');
         list += `${date} *${time}* ${l}\n`;
       });
-      // console.log(JSON.parse(u))
+
       interaction.reply({ content: list, ephemeral: true });
       console.log(`${userName} called the 'list' slash command`);
     } catch (err) {
@@ -297,6 +306,7 @@ client.on('interactionCreate', async (interaction) => {
       });
     }
   } else if (commandName === 'tag') {
+    // DEPRECATED, please remove
     const tagName = interaction.options.getString('name');
 
     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
@@ -311,6 +321,7 @@ client.on('interactionCreate', async (interaction) => {
 
     return interaction.reply(`Could not find tag: ${tagName}`);
   } else if (commandName === 'edittag') {
+    // DEPRECATED, please remove
     const tagName = interaction.options.getString('name');
     const tagDescription = interaction.options.getString('description');
 
@@ -326,6 +337,7 @@ client.on('interactionCreate', async (interaction) => {
 
     return interaction.reply(`Could not find a tag with name ${tagName}.`);
   } else if (commandName === 'taginfo') {
+    // DEPRECATED, please remove
     const tagName = interaction.options.getString('name');
 
     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
@@ -339,12 +351,14 @@ client.on('interactionCreate', async (interaction) => {
 
     return interaction.reply(`Could not find tag: ${tagName}`);
   } else if (commandName === 'showtags') {
+    // DEPRECATED, please remove
     // equivalent to: SELECT name FROM tags;
     const tagList = await Tags.findAll({ attributes: ['name'] });
     const tagString = tagList.map((t) => t.name).join(', ') || 'No tags set.';
 
     return interaction.reply(`List of tags: ${tagString}`);
   } else if (commandName === 'deletetag') {
+    // DEPRECATED, please remove
     const tagName = interaction.options.getString('name');
     // equivalent to: DELETE from tags WHERE name = ?;
     const rowCount = await Tags.destroy({ where: { name: tagName } });
@@ -352,10 +366,25 @@ client.on('interactionCreate', async (interaction) => {
     if (!rowCount) return interaction.reply("That tag doesn't exist.");
 
     return interaction.reply('Tag deleted.');
-  } else if (commandName === 'getonlineusers') {
-    interaction.guild.members.fetch().then((members) => {
-      members.forEach((m) => console.log(m.user.username));
+  } else if (commandName === 'online') {
+    let allMembers = await interaction.guild.members.fetch();
+    let onlineUsers = allMembers.filter((member) => member.presence);
+
+    let memberMap = onlineUsers.map((m) => {
+      return {
+        status: m.presence.status,
+        name: m.user.username,
+      };
     });
+
+    let online = 'status\t\tusername\n-------\t\t-----------\n';
+
+    memberMap.forEach((element) => {
+      if (element.status === 'online') {
+        online += `${element.status}\t\t${element.name}\n`;
+      }
+    });
+    interaction.reply(online);
   } else {
     return interaction.reply('Not a valid command');
   }
