@@ -372,19 +372,23 @@ client.on('interactionCreate', async (interaction) => {
 
     let memberMap = onlineUsers.map((m) => {
       return {
+        bot: m.user.bot,
         status: m.presence.status,
         name: m.user.username,
       };
     });
 
+    console.log(memberMap)
+
     let online = 'status\t\tusername\n-------\t\t-----------\n';
 
     memberMap.forEach((element) => {
-      if (element.status === 'online') {
+      if (element.status === 'online' && element.bot === false) {
         online += `${element.status}\t\t${element.name}\n`;
       }
     });
     interaction.reply(online);
+
   } else {
     return interaction.reply('Not a valid command');
   }
