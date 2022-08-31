@@ -351,7 +351,7 @@ client.on('interactionCreate', async (interaction) => {
 
     return interaction.reply(`Could not find tag: ${tagName}`);
   } else if (commandName === 'showtags') {
-    // DEPRECATED, please remove
+    //DEPRECATED
     // equivalent to: SELECT name FROM tags;
     const tagList = await Tags.findAll({ attributes: ['name'] });
     const tagString = tagList.map((t) => t.name).join(', ') || 'No tags set.';
@@ -370,6 +370,7 @@ client.on('interactionCreate', async (interaction) => {
     let allMembers = await interaction.guild.members.fetch();
     let onlineUsers = allMembers.filter((member) => member.presence);
 
+    // Get bot flag
     let memberMap = onlineUsers.map((m) => {
       return {
         bot: m.user.bot,
@@ -378,17 +379,41 @@ client.on('interactionCreate', async (interaction) => {
       };
     });
 
-    console.log(memberMap)
-
     let online = 'status\t\tusername\n-------\t\t-----------\n';
-
     memberMap.forEach((element) => {
       if (element.status === 'online' && element.bot === false) {
         online += `${element.status}\t\t${element.name}\n`;
       }
     });
     interaction.reply(online);
+  } else if (commandName === 'showallusers') {
+    let allMembers = await interaction.guild.members.fetch();
+    let onlineUsers = allMembers.filter((member) => member.presence);
 
+    // Get bot flag
+    let memberMap = onlineUsers.map((m) => {
+      return {
+        bot: m.user.bot,
+        status: m.presence.status,
+        name: m.user.username,
+      };
+    });
+
+    let online = '```type\tstatus\tusername\n';
+    online += '====\t======\t========\n'
+    memberMap.forEach((element) => {
+      let botOrUser = 'user';
+      if (element.bot === true) {
+        botOrUser = 'BOT';
+      }
+      online += `${botOrUser.padEnd(8)}${element.status.padEnd(6)}\t${
+        element.name
+      }\n`;
+    });
+
+    online += '```';
+
+    interaction.reply(online);
   } else {
     return interaction.reply('Not a valid command');
   }
@@ -413,7 +438,6 @@ client.on('messageCreate', async (message) => {
     });
 
     let online = 'status\t\tusername\n-------\t\t-----------\n';
-
     mOnlineUsers.forEach((element) => {
       online += `${element.status}\t\t${element.name}\n`;
     });

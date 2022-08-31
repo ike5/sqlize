@@ -79,11 +79,16 @@ const commands = [
   new SlashCommandBuilder()
     .setName('list')
     .setDescription('Gets all check ins'),
+  new SlashCommandBuilder()
+    .setName('showallusers')
+    .setDescription('Shows all users'),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);
 
 rest
-  .put(Routes.applicationGuildCommands(clientId, guildIdDayOwls), { body: commands })
+  .put(Routes.applicationGuildCommands(clientId, guildIdDayOwls), {
+    body: commands,
+  })
   .then(() => console.log('Successfully registered application commands.'))
   .catch(console.error);
