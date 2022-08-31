@@ -5,14 +5,17 @@
 
 
 ### Commands
-- `/checkin`            required description
-- `/checkout`           with optional description
-- `/showtotalcheckins`
-- `/showtimestudied`
-- `/showallcheckins`
-- `/showlastcheckins`
-- `/showlasttwocheckins`
+- [x] `/check`          
+- [ ] `/checkin`        future command
+- [ ] `/checkout`       A button that opens a modal on your check in (and makes it easy to calculate time)
+- [ ] `/showtotalcheckins`
+- [ ] `/showtimestudied`
+- [x] `/showallcheckins`
+- [x] `/showallusers`   A command that shows all users (including idle)
+- [x] `/online`         Shows all users online that are not bots nor idle
 - `/showlastcheckin`
+- `/showlasttwocheckins`
+- `/showlastcheckins`
 - `/findcheckinbydate`
 - `/findcheckinbytopic`
 - `/findcheckinbyid`
@@ -28,8 +31,6 @@
 - `/deleteallmydata`    
     - `/areyousure`
 - `/showusercheckins`   shows 10 most recent checkins by everyone
-- `/inserttestcheckins` for current user only
-- `/imstudying`         this can be done automatically in the future
 - `/whoisstudying`      displays everyone online who is contributing to your list of students
 > - `/keepmeaccountable`  
 > initiates a push to all people who are online, who can then click a button to show their support.

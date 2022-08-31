@@ -82,6 +82,9 @@ const commands = [
   new SlashCommandBuilder()
     .setName('showallusers')
     .setDescription('Shows all users'),
+  new SlashCommandBuilder()
+    .setName('showtotalcheckins')
+    .setDescription('Shows all checkins'),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);

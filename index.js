@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
+const { createImportSpecifier } = require('typescript');
 
 const client = new Client({
   intents: [
@@ -306,7 +307,7 @@ client.on('interactionCreate', async (interaction) => {
       });
     }
   } else if (commandName === 'tag') {
-    // DEPRECATED, please remove
+   
     const tagName = interaction.options.getString('name');
 
     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
@@ -321,7 +322,6 @@ client.on('interactionCreate', async (interaction) => {
 
     return interaction.reply(`Could not find tag: ${tagName}`);
   } else if (commandName === 'edittag') {
-    // DEPRECATED, please remove
     const tagName = interaction.options.getString('name');
     const tagDescription = interaction.options.getString('description');
 
@@ -337,7 +337,6 @@ client.on('interactionCreate', async (interaction) => {
 
     return interaction.reply(`Could not find a tag with name ${tagName}.`);
   } else if (commandName === 'taginfo') {
-    // DEPRECATED, please remove
     const tagName = interaction.options.getString('name');
 
     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
@@ -400,7 +399,7 @@ client.on('interactionCreate', async (interaction) => {
     });
 
     let online = '```type\tstatus\tusername\n';
-    online += '====\t======\t========\n'
+    online += '====\t======\t========\n';
     memberMap.forEach((element) => {
       let botOrUser = 'user';
       if (element.bot === true) {
@@ -414,6 +413,13 @@ client.on('interactionCreate', async (interaction) => {
     online += '```';
 
     interaction.reply(online);
+  } else if (commandName === 'showtotalcheckins') {
+    const amount = await Log.count({
+      where: {
+        UserDiscordId: interaction.user.id,
+      },
+    });
+    interaction.reply(`Total check-ins: ${amount}`);
   } else {
     return interaction.reply('Not a valid command');
   }
