@@ -1,7 +1,12 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const {
+  Client,
+  GatewayIntentBits,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require('discord.js');
 const { token } = require('./config.json');
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
-const { createImportSpecifier } = require('typescript');
 
 const client = new Client({
   intents: [
@@ -222,6 +227,13 @@ client.on('interactionCreate', async (interaction) => {
     const userName = interactionUser.user.username;
     const userId = interactionUser.id;
 
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('checkout')
+        .setLabel('Check-out')
+        .setStyle(ButtonStyle.Primary)
+    );
+
     console.log(`Username: ${userName}\nUserId: ${userId}`);
 
     // creates a new user if id isn't found in database
@@ -243,13 +255,19 @@ client.on('interactionCreate', async (interaction) => {
         ci_timestamp: new Date(),
         UserDiscordId: userId,
       });
-      let parsedDescription = `CHECK-IN:\n`;
+      let parsedDescription = `CHECK-IN: ${interaction.user}\n`;
       JSON.parse(u.ci_description).forEach((element) => {
         parsedDescription += `- ${element.trim()}\n`;
       });
+      await interaction.channel.send({
+        content: `${parsedDescription}`,
+      });
+      await interaction.reply({
+        content: 'When you are done studying, click below',
+        components: [row],
+        ephemeral: true,
+      });
 
-      console.log(parsedDescription);
-      interaction.reply(`${parsedDescription}`);
       console.log(`${userName} called the 'check' slash command`);
     } catch (e) {
       console.log(e);
@@ -298,6 +316,7 @@ client.on('interactionCreate', async (interaction) => {
       });
 
       interaction.reply({ content: list, ephemeral: true });
+
       console.log(`${userName} called the 'list' slash command`);
     } catch (err) {
       console.error(err);
@@ -307,7 +326,6 @@ client.on('interactionCreate', async (interaction) => {
       });
     }
   } else if (commandName === 'tag') {
-   
     const tagName = interaction.options.getString('name');
 
     // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
@@ -423,6 +441,31 @@ client.on('interactionCreate', async (interaction) => {
   } else {
     return interaction.reply('Not a valid command');
   }
+});
+
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+  const previousCheckin = await Log.findOne({
+    where: {
+      UserDiscordId: interaction.user.id,
+    },
+    order: [['ci_timestamp', 'DESC']],
+  });
+  let val = previousCheckin.ci_description;
+  let arr = JSON.parse(val);
+
+  let str = `CHECK-IN: ${interaction.user}\n`;
+  for (const key in arr) {
+    if (Object.hasOwnProperty.call(arr, key)) {
+      const element = arr[key];
+      str += `${element}\n`
+    }
+  }
+
+  await interaction.update({
+    content: str,
+    components: [],
+  });
 });
 
 client.on('messageCreate', async (message) => {

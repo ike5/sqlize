@@ -8,7 +8,7 @@
 - [x] `/check`          
 - [ ] `/checkin`        future command
 - [ ] `/checkout`       A button that opens a modal on your check in (and makes it easy to calculate time)
-- [ ] `/showtotalcheckins`
+- [x] `/showtotalcheckins`
 - [ ] `/showtimestudied`
 - [x] `/showallcheckins`
 - [x] `/showallusers`   A command that shows all users (including idle)
