@@ -265,16 +265,11 @@ client.on('interactionCreate', async (interaction) => {
         parsedDescription += `- ${element.trim()}\n`;
       });
 
-      // Display CHECK-IN viewable to all --> ephemeral: false
-      await interaction.channel.send({
-        content: `${parsedDescription}`,
-      });
-
-      // Display button only to self --> ephemeral: true
+      // Display checkin
       await interaction.reply({
-        content: 'Click below to check-out',
+        content: `${parsedDescription}`,
         components: [row],
-        ephemeral: true,
+        ephemeral: false,
       });
 
       console.log(`${userName} called '/check'`);
@@ -440,14 +435,14 @@ client.on('interactionCreate', async (interaction) => {
   let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
   let hours = Math.floor(time_elapsed / 1000 / 60 / 60);
 
-  console.log(previousCheckin.time_studied);
-  // str += `${datetime}`;
-  await interaction.reply({
-    content: `${interaction.user}\nTime studied: ${hours}h:${minutes}m:${seconds}s`,
-    ephemeral: false,
+  interaction.update({
+    content: `${interaction.user}\n${interaction.message.content}\n${hours}h:${minutes}m:${seconds}s`,
+    components: [],
   });
 
-  let reply = await interaction.fetchReply();
+  // console.log(interaction.message.id);
+  let lastmsg = interaction.message.interaction.id;
+  console.log(lastmsg);
 });
 
 /**
