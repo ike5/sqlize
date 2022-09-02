@@ -4,6 +4,11 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  InteractionType,
 } = require('discord.js');
 const { token } = require('./config.json');
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
@@ -235,8 +240,6 @@ client.on('interactionCreate', async (interaction) => {
         .setStyle(ButtonStyle.Primary)
     );
 
-    console.log(`Username: ${userName}\nUserId: ${userId}`);
-
     // Create user if id isn't found in database
     await isIdUnique(userId).then((isUnique) => {
       if (isUnique) {
@@ -391,12 +394,21 @@ client.on('interactionCreate', async (interaction) => {
 
     interaction.reply(online);
   } else if (commandName === 'showtotalcheckins') {
+    // Get logs for user
     const amount = await Log.count({
       where: {
         UserDiscordId: interaction.user.id,
       },
     });
-    interaction.reply(`Total check-ins: ${amount}`);
+    // Create embed
+    const totalCheckinsEmbed = new EmbedBuilder()
+      .setTitle('Total number of check-ins')
+      .setDescription(`${amount}`);
+
+    await interaction.reply({
+      embeds: [totalCheckinsEmbed],
+      ephemeral: true,
+    });
   } else {
     return interaction.reply('Not a valid command');
   }
@@ -407,42 +419,58 @@ client.on('interactionCreate', async (interaction) => {
  */
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
-  const previousCheckin = await Log.findOne({
-    where: {
-      UserDiscordId: interaction.user.id,
-    },
-    order: [['createdAt', 'DESC']],
-  });
-  // console.log(previousCheckin);
-  previousCheckin.setDataValue('co_timestamp', new Date().getTime());
-  previousCheckin.reload();
-  previousCheckin.save();
-  // console.log(previousCheckin);
-  let val = previousCheckin.ci_description;
-  let arr = JSON.parse(val);
 
-  let str = `CHECK-OUT: ${interaction.user}\n`;
-  for (const key in arr) {
-    if (Object.hasOwnProperty.call(arr, key)) {
-      const element = arr[key];
-      str += `- ${element.trim()}\n`;
+  const { customId } = interaction;
+  console.log(customId);
+  if (customId === 'checkout') {
+    if (interaction.member.guild.ownerId === interaction.user.id) {
+      const previousCheckin = await Log.findOne({
+        where: {
+          UserDiscordId: interaction.user.id,
+        },
+        order: [['createdAt', 'DESC']],
+      });
+      // console.log(previousCheckin);
+      previousCheckin.setDataValue('co_timestamp', new Date().getTime());
+      previousCheckin.reload();
+      previousCheckin.save();
+      // console.log(previousCheckin);
+      let val = previousCheckin.ci_description;
+      let arr = JSON.parse(val);
+
+      let str = `CHECK-OUT: ${interaction.user}\n`;
+      for (const key in arr) {
+        if (Object.hasOwnProperty.call(arr, key)) {
+          const element = arr[key];
+          str += `- ${element.trim()}\n`;
+        }
+      }
+
+      //TODO: total time studying
+      let time_elapsed = previousCheckin.time_studied;
+      let seconds = Math.floor((time_elapsed / 1000) % 60);
+      let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
+      let hours = Math.floor(time_elapsed / 1000 / 60 / 60);
+
+      // Create embed
+      const timeStudiedEmbed = new EmbedBuilder()
+        .setTitle('Time studied')
+        .setDescription(`${hours}h:${minutes}m:${seconds}s`);
+
+      interaction.update({
+        embeds: [timeStudiedEmbed],
+        components: [],
+      });
+
+      // console.log(interaction.message.id);
+      // let lastmsg = interaction.message.interaction.id;
+    } else {
+      interaction.reply({
+        content: 'That is not your check-in',
+        ephemeral: true,
+      });
     }
   }
-
-  //TODO: total time studying
-  let time_elapsed = previousCheckin.time_studied;
-  let seconds = Math.floor((time_elapsed / 1000) % 60);
-  let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
-  let hours = Math.floor(time_elapsed / 1000 / 60 / 60);
-
-  interaction.update({
-    content: `${interaction.user}\n${interaction.message.content}\n${hours}h:${minutes}m:${seconds}s`,
-    components: [],
-  });
-
-  // console.log(interaction.message.id);
-  let lastmsg = interaction.message.interaction.id;
-  console.log(lastmsg);
 });
 
 /**

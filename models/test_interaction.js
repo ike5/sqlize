@@ -154,3 +154,27 @@ const ButtonInteraction = {
   replied: true,
   webhook: { id: '1009318061104439367' },
 };
+
+client.on('interactionCreate', async (interaction) => {
+  if (interaction.type !== InteractionType.ModalSubmit) return;
+  if (interaction.customId === 'myModal') {
+    await interaction.reply({
+      content: 'Your submission was received successfully!',
+      ephemeral: true,
+    });
+  }
+});
+
+const modal = new ModalBuilder().setCustomId('myModal').setTitle('My Modal');
+
+// Create the text input components
+const notOwnerText = new TextInputBuilder()
+  .setCustomId('notOwner')
+  .setLabel("You're not the owner of this check-in!")
+  // Short means only a single line of text
+  .setStyle(TextInputStyle.Short);
+
+const firstActionRow = new ActionRowBuilder().addComponents(notOwnerText);
+modal.addComponents(firstActionRow);
+
+await interaction.showModal(modal);
