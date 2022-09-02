@@ -84,21 +84,32 @@ Log.init(
   {
     ci_description: DataTypes.TEXT,
     co_description: DataTypes.TEXT,
-    ci_timestamp: DataTypes.TIME,
-    co_timestamp: DataTypes.TIME,
+    ci_timestamp: {
+      type: DataTypes.TIME,
+      set(value) {
+        this.setDataValue('ci_timestamp', value);
+      },
+    },
+    co_timestamp: {
+      type: DataTypes.TIME,
+      set(value) {
+        this.setDataValue('co_timestamp', value);
+      },
+    },
     messageId: DataTypes.STRING,
     messageReplyId: DataTypes.STRING,
     time_studied: {
+      // in unix epoch time
       type: DataTypes.VIRTUAL,
       get() {
-        return `${this.co_timestamp - this.ci_timestamp}`;
+        return `${new Date(this.co_timestamp) - new Date(this.ci_timestamp)}`;
       },
       set(value) {
         throw new Error('Do not try to set the `time_studied` value!');
       },
     },
   },
-  { sequelize, modelName: 'Log', timestamps: false }
+  { sequelize, modelName: 'Log', timestamps: true }
 );
 
 class UserTrophies extends Model {}
@@ -156,7 +167,7 @@ User.belongsToMany(User, { as: 'Sibling', through: Friends });
 // START: INITIATE SERVER
 //---------------------------------------------------/
 client.once('ready', async () => {
-  await sequelize.sync({ alter: true, force: false });
+  await sequelize.sync({ alter: false, force: false });
   console.log(`Logged in as ${client.user.tag}`);
 });
 // END: INITIATE SERVER
@@ -213,9 +224,10 @@ client.on('interactionCreate', async (interaction) => {
       interaction.user.id
     );
     const nickName = interactionUser.nickname;
-    const userName = interactionUser.user.username;
+    const userName = interactionUser.user.username; // use interaction.user instead
     const userId = interactionUser.id;
 
+    // Button used for CHECKOUT
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId('checkout')
@@ -225,43 +237,56 @@ client.on('interactionCreate', async (interaction) => {
 
     console.log(`Username: ${userName}\nUserId: ${userId}`);
 
-    // creates a new user if id isn't found in database
+    // Create user if id isn't found in database
     await isIdUnique(userId).then((isUnique) => {
       if (isUnique) {
         const u = User.create({
           discordId: userId,
           discordNickname: nickName,
           username: userName,
-          date_joined: new Date(),
+          date_joined: new Date().getTime(),
         });
         console.log(`${u} has been created!`);
       }
     });
 
     try {
-      const u = await Log.create({
+      // Create a Log entry
+      const log_entry = await Log.create({
+        // Get list delineated by commas
         ci_description: JSON.stringify(ci_option.split(',')),
-        ci_timestamp: new Date(),
+        ci_timestamp: new Date().getTime(),
         UserDiscordId: userId,
       });
+
+      // Build string to display on Discord publicly
       let parsedDescription = `CHECK-IN: ${interaction.user}\n`;
-      JSON.parse(u.ci_description).forEach((element) => {
+      JSON.parse(log_entry.ci_description).forEach((element) => {
         parsedDescription += `- ${element.trim()}\n`;
       });
+
+      // Display CHECK-IN viewable to all --> ephemeral: false
       await interaction.channel.send({
         content: `${parsedDescription}`,
       });
+
+      // Display button only to self --> ephemeral: true
       await interaction.reply({
-        content: 'When you are done studying, click below',
+        content: 'Click below to check-out',
         components: [row],
         ephemeral: true,
       });
 
-      console.log(`${userName} called the 'check' slash command`);
+      console.log(`${userName} called '/check'`);
     } catch (e) {
       console.log(e);
     }
+
+    /**
+     * List all check-ins
+     */
   } else if (commandName === 'list') {
+    //TODO: prevent system from crashing if a user doesn't exist
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
     );
@@ -272,19 +297,19 @@ client.on('interactionCreate', async (interaction) => {
     // creates a new user if id isn't found in database
     await isIdUnique(userId).then((isUnique) => {
       if (isUnique) {
-        const u = User.create({
+        const newUser = User.create({
           discordId: userId,
           discordNickname: nickName,
           username: userName,
-          date_joined: new Date(),
+          date_joined: new Date().getTime(),
         });
-        console.log(`${u} has been created!`);
+        console.log(`${newUser} has been created!`);
       }
     });
 
     try {
       // Find all check-ins with a specific userId
-      const u = await Log.findAll({
+      const user_check_ins = await Log.findAll({
         where: {
           UserDiscordId: `${userId}`,
         },
@@ -292,7 +317,7 @@ client.on('interactionCreate', async (interaction) => {
 
       // Create a string list of all check-in descriptions
       let list = `\n`;
-      u.forEach((element) => {
+      user_check_ins.forEach((element) => {
         let l = `\n`;
         JSON.parse(element.ci_description).forEach((e) => {
           l += `\t- ${e.trim()}\n`;
@@ -306,7 +331,7 @@ client.on('interactionCreate', async (interaction) => {
 
       interaction.reply({ content: list, ephemeral: true });
 
-      console.log(`${userName} called the 'list' slash command`);
+      console.log(`${userName} called 'list'`);
     } catch (err) {
       console.error(err);
       interaction.reply({
@@ -314,6 +339,10 @@ client.on('interactionCreate', async (interaction) => {
         ephemeral: true,
       });
     }
+
+    /**
+     * Displays list of all users who are currently online and aren't bots
+     */
   } else if (commandName === 'online') {
     let allMembers = await interaction.guild.members.fetch();
     let onlineUsers = allMembers.filter((member) => member.presence);
@@ -334,6 +363,10 @@ client.on('interactionCreate', async (interaction) => {
       }
     });
     interaction.reply(online);
+
+    /**
+     * Shows all users, bots, and idle
+     */
   } else if (commandName === 'showallusers') {
     let allMembers = await interaction.guild.members.fetch();
     let onlineUsers = allMembers.filter((member) => member.presence);
@@ -383,8 +416,13 @@ client.on('interactionCreate', async (interaction) => {
     where: {
       UserDiscordId: interaction.user.id,
     },
-    order: [['ci_timestamp', 'DESC']],
+    order: [['createdAt', 'DESC']],
   });
+  // console.log(previousCheckin);
+  previousCheckin.setDataValue('co_timestamp', new Date().getTime());
+  previousCheckin.reload();
+  previousCheckin.save();
+  // console.log(previousCheckin);
   let val = previousCheckin.ci_description;
   let arr = JSON.parse(val);
 
@@ -397,21 +435,15 @@ client.on('interactionCreate', async (interaction) => {
   }
 
   //TODO: total time studying
-  let date1 = previousCheckin.ci_timestamp;
-  let date2 = new Date();
+  let time_elapsed = previousCheckin.time_studied;
+  let seconds = Math.floor((time_elapsed / 1000) % 60);
+  let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
+  let hours = Math.floor(time_elapsed / 1000 / 60 / 60);
 
-  let res = Math.abs(date1 - date2) / 1000;
-  let days = Math.floor(res / 86400);
-  let hours = Math.floor(res / 3600) % 24;
-  let minutes = Math.floor(res / 60) % 60;
-  let seconds = res % 60;
-  let datetime = `${hours.toFixed(0)}h:${minutes.toFixed(0)}m:${seconds.toFixed(
-    0
-  )}s`;
-
-  str += `${datetime}`;
+  console.log(previousCheckin.time_studied);
+  // str += `${datetime}`;
   await interaction.reply({
-    content: str,
+    content: `${interaction.user}\nTime studied: ${hours}h:${minutes}m:${seconds}s`,
     ephemeral: false,
   });
 
