@@ -70,7 +70,6 @@ User.init(
     time_studied: DataTypes.TIME,
     phone: DataTypes.TEXT,
     checkins: DataTypes.INTEGER,
-    checkouts: DataTypes.INTEGER,
     friendList: DataTypes.TEXT,
   },
   { sequelize, modelName: 'User', timestamps: false }
@@ -87,6 +86,8 @@ Log.init(
     co_description: DataTypes.TEXT,
     ci_timestamp: DataTypes.TIME,
     co_timestamp: DataTypes.TIME,
+    messageId: DataTypes.STRING,
+    messageReplyId: DataTypes.STRING
   },
   { sequelize, modelName: 'Log', timestamps: false }
 );
@@ -146,7 +147,7 @@ User.belongsToMany(User, { as: 'Sibling', through: Friends });
 // START: INITIATE SERVER
 //---------------------------------------------------/
 client.once('ready', async () => {
-  await sequelize.sync({ force: false });
+  await sequelize.sync({ alter: false , force: false });
   console.log(`Logged in as ${client.user.tag}`);
 });
 // END: INITIATE SERVER
@@ -454,18 +455,35 @@ client.on('interactionCreate', async (interaction) => {
   let val = previousCheckin.ci_description;
   let arr = JSON.parse(val);
 
-  let str = `CHECK-IN: ${interaction.user}\n`;
+  let str = `CHECK-OUT: ${interaction.user}\n`;
   for (const key in arr) {
     if (Object.hasOwnProperty.call(arr, key)) {
       const element = arr[key];
-      str += `${element}\n`
+      str += `- ${element.trim()}\n`;
     }
   }
 
-  await interaction.update({
+  //TODO: total time studying
+  let date1 = previousCheckin.ci_timestamp;
+  let date2 = new Date();
+
+  let res = Math.abs(date1 - date2) / 1000;
+  let days = Math.floor(res / 86400);
+  let hours = Math.floor(res / 3600) % 24;
+  let minutes = Math.floor(res / 60) % 60;
+  let seconds = res % 60;
+  let datetime = `${hours.toFixed(0)}h:${minutes.toFixed(0)}m:${seconds.toFixed(
+    0
+  )}s`;
+
+  str += `${datetime}`;
+  await interaction.reply({
     content: str,
-    components: [],
+    ephemeral: false,
   });
+
+  let reply = await interaction.fetchReply();
+  
 });
 
 client.on('messageCreate', async (message) => {
