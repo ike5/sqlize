@@ -263,7 +263,8 @@ client.on('interactionCreate', async (interaction) => {
       });
 
       // Build string to display on Discord publicly
-      let parsedDescription = `CHECK-IN: ${interaction.user}\n`;
+      // Changing the position of interaction.user here can break the button substring() method
+      let parsedDescription = `${interaction.user} CHECK-IN\n`;
       JSON.parse(log_entry.ci_description).forEach((element) => {
         parsedDescription += `- ${element.trim()}\n`;
       });
@@ -423,7 +424,11 @@ client.on('interactionCreate', async (interaction) => {
   const { customId } = interaction;
   console.log(customId);
   if (customId === 'checkout') {
-    if (interaction.member.guild.ownerId === interaction.user.id) {
+    console.log(interaction.message.content);
+    // console.log(`user id: s${interaction.user.id}`)
+
+    // Checks the user id for who created the message
+    if (interaction.message.content.substring(2, 20) === interaction.user.id) {
       const previousCheckin = await Log.findOne({
         where: {
           UserDiscordId: interaction.user.id,
@@ -466,54 +471,13 @@ client.on('interactionCreate', async (interaction) => {
       // let lastmsg = interaction.message.interaction.id;
     } else {
       interaction.reply({
-        content: 'That is not your check-in',
+        content: `You can't check-out someone else!`,
         ephemeral: true,
       });
+      console.log(
+        `${interaction.user.username} is trying to checkout someone else.\nSMS me if someone is trying to check out someone else`
+      );
     }
-  }
-});
-
-/**
- * Message creations
- */
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) {
-    console.log('a bot');
-  } else {
-    console.log('not a bot');
-  }
-
-  if (message.content === '!online') {
-    let allMembers = await message.guild.members.fetch();
-    let onlineUsers = allMembers.filter((member) => member.presence);
-
-    let mOnlineUsers = onlineUsers.map((m) => {
-      return {
-        status: m.presence.status,
-        name: m.user.username,
-      };
-    });
-
-    let online = 'status\t\tusername\n-------\t\t-----------\n';
-    mOnlineUsers.forEach((element) => {
-      online += `${element.status}\t\t${element.name}\n`;
-    });
-    message.reply(online);
-  }
-
-  // Lists all users who've made checkins
-  if (message.content === '!allusers') {
-    let registeredUsers = 'Registered users:\n';
-
-    const u = await User.findAll({
-      attributes: ['username'],
-    });
-
-    u.forEach((element) => {
-      registeredUsers += `${element.username}\n`;
-    });
-
-    await message.reply({ content: `${registeredUsers}` });
   }
 });
 
