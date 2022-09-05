@@ -1,5 +1,6 @@
 const {
   Client,
+  Collection,
   GatewayIntentBits,
   ActionRowBuilder,
   ButtonBuilder,
@@ -10,6 +11,8 @@ const {
   TextInputStyle,
   InteractionType,
 } = require('discord.js');
+const fs = require('node:fs');
+const path = require('node:path');
 const { token } = require('./config.json');
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 
@@ -24,7 +27,35 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+client.commands = new Collection();
 
+// Reading command files
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs
+  .readdirSync(commandsPath)
+  .filter((file) => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  client.commands.set(command.data.name, command);
+}
+
+// Reading event files
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs
+  .readdirSync(eventsPath)
+  .filter((file) => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
+  }
+}
 /**
  * Initialize database in SQLite
  */
@@ -166,20 +197,10 @@ Friends.init(
 User.belongsToMany(User, { as: 'Parent', through: Friends });
 User.belongsToMany(User, { as: 'Sibling', through: Friends });
 
-// End Section: Build Tables //
-//***************************************************/
-
-// START: INITIATE SERVER
-//---------------------------------------------------/
-client.once('ready', async () => {
-  await sequelize.sync({ alter: false, force: false });
-  console.log(`Logged in as ${client.user.tag}`);
-});
-// END: INITIATE SERVER
-//---------------------------------------------------/
-
-// START HELPER FUNCTIONS //
-//--------------------------------------------------//
+// client.once('ready', async () => {
+//   await sequelize.sync({ alter: false, force: false });
+//   console.log(`Logged in as ${client.user.tag}`);
+// });
 
 /**
  * Checks to see if a user already exists in the database.
@@ -203,11 +224,21 @@ async function isIdUnique(id) {
   });
 }
 
-// END HELPER FUNCTIONS //
-//--------------------------------------------------//
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+  const command = interaction.client.commands.get(interaction.commandName);
 
-// START INTERACTION SECTION //
-//***************************************************/
+  if (!command) return;
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({
+      content: 'There was an error while executing this command',
+      ephemeral: true,
+    });
+  }
+});
 
 // Create interaction variable for slash commands
 client.on('interactionCreate', async (interaction) => {
@@ -409,6 +440,42 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.reply({
       embeds: [totalCheckinsEmbed],
       ephemeral: true,
+    });
+  } else if (commandName === 'totaltime') {
+    const all_logs = await Log.findAll({
+      where: {
+        [Op.and]: [
+          { UserDiscordId: interaction.user.id },
+          {
+            co_timestamp: {
+              [Op.not]: null,
+            },
+          },
+        ],
+      },
+    });
+
+    const getsTime = (date) => {
+      return new Date(date).getTime();
+    };
+    let total_time = 0;
+    for (let i = 0; i < all_logs.length; i++) {
+      total_time += getsTime(all_logs[i].time_studied);
+    }
+
+    let time_elapsed = total_time;
+    let seconds = Math.floor((time_elapsed / 1000) % 60);
+    let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
+    let hours = Math.floor(time_elapsed / 1000 / 60 / 60);
+
+    // Create embed
+    const timeStudiedEmbed = new EmbedBuilder()
+      .setTitle('Time studied')
+      .setDescription(`${hours}h:${minutes}m:${seconds}s`);
+
+    interaction.reply({
+      embeds: [timeStudiedEmbed],
+      components: [],
     });
   } else {
     return interaction.reply('Not a valid command');

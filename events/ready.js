@@ -1,8 +1,8 @@
 module.exports = {
-  name: "ready",
+  name: 'ready',
   once: true,
   execute(client) {
+    sequelize.sync({ alter: false, force: false });
     console.log(`Ready! Logged in as ${client.user.tag}`);
-    console.log(`The time is ${new Date().toUTCString()}`)
   },
 };

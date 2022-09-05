@@ -85,6 +85,9 @@ const commands = [
   new SlashCommandBuilder()
     .setName('showtotalcheckins')
     .setDescription('Shows all checkins'),
+  new SlashCommandBuilder()
+    .setName('totaltime')
+    .setDescription('Shows the total time spent studying overall'),
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(token);
