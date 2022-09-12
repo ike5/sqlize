@@ -58,25 +58,9 @@ for (const file of commandFiles) {
 //     client.on(event.name, (...args) => event.execute(...args));
 //   }
 // }
-/**
- * Initialize database in SQLite
- */
-// const sequelize = new Sequelize('database', 'user', 'password', {
-//   host: 'localhost',
-//   dialect: 'sqlite',
-//   logging: false,
-//   // SQLite only
-//   storage: 'database.sqlite',
-// });
-// const sequelize = new DB().getSequelize();
 
-// const { Trophy } = require('./models/Trophy.js')(sequelize, DataTypes);
-// const { User } = require('./models/User.js')(sequelize, DataTypes);
+
 const { Log } = require('./models/Log.js')(DB.prototype.sequelize, DataTypes);
-// const { UserTrophies } = require('./models/UserTrophies.js')(
-//   sequelize,
-//   DataTypes
-// );
 
 client.once('ready', async () => {
   await DB.prototype.sequelize.sync({ alter: false, force: false });
@@ -98,30 +82,6 @@ client.on('interactionCreate', async (interaction) => {
     });
   }
 });
-
-//   /**
-//    * Displays list of all users who are currently online and aren't bots
-//    */
-// } else if (commandName === 'online') {
-//   let allMembers = await interaction.guild.members.fetch();
-//   let onlineUsers = allMembers.filter((member) => member.presence);
-
-//   // Get bot flag
-//   let memberMap = onlineUsers.map((m) => {
-//     return {
-//       bot: m.user.bot,
-//       status: m.presence.status,
-//       name: m.user.username,
-//     };
-//   });
-
-//   let online = 'status\t\tusername\n-------\t\t-----------\n';
-//   memberMap.forEach((element) => {
-//     if (element.status === 'online' && element.bot === false) {
-//       online += `${element.status}\t\t${element.name}\n`;
-//     }
-//   });
-//   interaction.reply(online);
 
 //   /**
 //    * Shows all users, bots, and idle
