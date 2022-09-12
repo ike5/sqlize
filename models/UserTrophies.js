@@ -1,5 +1,5 @@
 const { Model } = require('sequelize');
-const {User } = require('../models/User.js')
+const {User } = require('./User.js')
 const {Trophy} = require('../models/Trophy.js')
 module.exports = (sequelize, DataTypes) => {
   class UserTrophies extends Model {}

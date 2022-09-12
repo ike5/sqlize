@@ -2,7 +2,10 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Trophy extends Model {
     getAllTrophies() {}
-    Trophy.belongsToMany(User, { through: UserTrophies });
+    static associate(models) {
+      // define association here
+      this.belongsToMany(models.User, { through: models.UserTrophies });
+    }
   }
   Trophy.init(
     {

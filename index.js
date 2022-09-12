@@ -68,30 +68,18 @@ const sequelize = new Sequelize('database', 'user', 'password', {
   storage: 'database.sqlite',
 });
 
-
-const { Trophy } = require('./models/Trophy.js')(sequelize, DataTypes);
-const { User } = require('./models/User.js')(sequelize, DataTypes);
+// const { Trophy } = require('./models/Trophy.js')(sequelize, DataTypes);
+// const { User } = require('./models/User.js')(sequelize, DataTypes);
 const { Log } = require('./models/Log.js')(sequelize, DataTypes);
-const { UserTrophies } = require('./models/UserTrophies.js')(sequelize, DataTypes);
+// const { UserTrophies } = require('./models/UserTrophies.js')(
+//   sequelize,
+//   DataTypes
+// );
 
-Trophy.belongsToMany(User, { through: UserTrophies });
-User.belongsToMany(Trophy, { through: UserTrophies });
-
-User.hasMany(Log);
-Log.belongsTo(User);
-
-User.belongsToMany(User, { as: 'Parent', through: Friends });
-User.belongsToMany(User, { as: 'Sibling', through: Friends });
-
-
-
-
-
-
-client.once('ready', async () => {
-  await sequelize.sync({ alter: false, force: false });
-  console.log(`Logged in as ${client.user.tag}`);
-});
+// client.once('ready', async () => {
+//   await sequelize.sync({ alter: false, force: false });
+//   console.log(`Logged in as ${client.user.tag}`);
+// });
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
@@ -109,76 +97,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-/**
- * discordInfo = {discordId, ci_description, ci_timestamp}
- * if user exists
- *  if check-in doesn't exist
- *    create check-in
- *      increment number of check-ins by 1
- *      total_time = co_time - ci_time
- *      time_studied += total_time
- */
-// if (commandName === 'check') {
-//   const ci_option = interaction.options.getString('description');
-//   const interactionUser = await interaction.guild.members.fetch(
-//     interaction.user.id
-//   );
-//   const nickName = interactionUser.nickname;
-//   const userName = interactionUser.user.username; // use interaction.user instead
-//   const userId = interactionUser.id;
 
-//   // Button used for CHECKOUT
-//   const row = new ActionRowBuilder().addComponents(
-//     new ButtonBuilder()
-//       .setCustomId('checkout')
-//       .setLabel('Check-out')
-//       .setStyle(ButtonStyle.Primary)
-//   );
-
-//   // Create user if id isn't found in database
-//   await isIdUnique(userId).then((isUnique) => {
-//     if (isUnique) {
-//       const u = User.create({
-//         discordId: userId,
-//         discordNickname: nickName,
-//         username: userName,
-//         date_joined: new Date().getTime(),
-//       });
-//       console.log(`${u} has been created!`);
-//     }
-//   });
-
-//   try {
-//     // Create a Log entry
-//     const log_entry = await Log.create({
-//       // Get list delineated by commas
-//       ci_description: JSON.stringify(ci_option.split(',')),
-//       ci_timestamp: new Date().getTime(),
-//       UserDiscordId: userId,
-//     });
-
-//     // Build string to display on Discord publicly
-//     // Changing the position of interaction.user here can break the button substring() method
-//     let parsedDescription = `${interaction.user} CHECK-IN\n`;
-//     JSON.parse(log_entry.ci_description).forEach((element) => {
-//       parsedDescription += `- ${element.trim()}\n`;
-//     });
-
-//     // Display checkin
-//     await interaction.reply({
-//       content: `${parsedDescription}`,
-//       components: [row],
-//       ephemeral: false,
-//     });
-
-//     console.log(`${userName} called '/check'`);
-//   } catch (e) {
-//     console.log(e);
-//   }
-
-//   /**
-//    * List all check-ins
-//    */
 // } else if (commandName === 'list') {
 //   //TODO: prevent system from crashing if a user doesn't exist
 //   const interactionUser = await interaction.guild.members.fetch(

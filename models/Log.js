@@ -4,7 +4,11 @@ module.exports = (sequelize, DataTypes) => {
    * Associations:
    * - 1:M with User
    */
-  class Log extends Model {}
+  class Log extends Model {
+    static associate(models) {
+      this.belongsTo(models.User);
+    }
+  }
   Log.init(
     {
       ci_description: DataTypes.TEXT,
