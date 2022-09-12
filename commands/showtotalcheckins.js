@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { DB } = require('../models/DB');
-const {Log} = require('../models/Log')
+const { Log } = require('../models/Log');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('showtotalcheckins')
@@ -8,7 +8,7 @@ module.exports = {
   async execute(interaction) {
     // Get logs for user
 
-    //TODO: Fix undefined 'count' method
+    //FIXME: Fix undefined 'count' method
     const amount = await Log.count({
       where: {
         UserDiscordId: interaction.user.id,
@@ -23,6 +23,6 @@ module.exports = {
       embeds: [totalCheckinsEmbed],
       ephemeral: true,
     });
-    console.log("/showtotalcheckins executed")
+    console.log('/showtotalcheckins executed');
   },
 };
