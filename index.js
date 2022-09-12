@@ -84,21 +84,7 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 // } else if (commandName === 'showtotalcheckins') {
-//   // Get logs for user
-//   const amount = await Log.count({
-//     where: {
-//       UserDiscordId: interaction.user.id,
-//     },
-//   });
-//   // Create embed
-//   const totalCheckinsEmbed = new EmbedBuilder()
-//     .setTitle('Total number of check-ins')
-//     .setDescription(`${amount}`);
 
-//   await interaction.reply({
-//     embeds: [totalCheckinsEmbed],
-//     ephemeral: true,
-//   });
 // } else if (commandName === 'totaltime') {
 //   const all_logs = await Log.findAll({
 //     where: {
