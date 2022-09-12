@@ -76,10 +76,10 @@ const { Log } = require('./models/Log.js')(sequelize, DataTypes);
 //   DataTypes
 // );
 
-// client.once('ready', async () => {
-//   await sequelize.sync({ alter: false, force: false });
-//   console.log(`Logged in as ${client.user.tag}`);
-// });
+client.once('ready', async () => {
+  await sequelize.sync({ alter: false, force: false });
+  console.log(`Logged in as ${client.user.tag}`);
+});
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;

@@ -5,7 +5,7 @@ const {
   ButtonStyle,
 } = require('discord.js');
 const { isIdUnique } = require('../modules/helper-functions');
-const {User} = require('../index')
+const { User } = require('../models/User.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('check')
