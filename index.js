@@ -68,135 +68,25 @@ const sequelize = new Sequelize('database', 'user', 'password', {
   storage: 'database.sqlite',
 });
 
-// Start Section: Build Tables //
-//***************************************************/
 
-/**
- * Associations:
- * - 1:M with UserTrophies
- */
-class Trophy extends Model {
-  getAllTrophies() {}
-}
-Trophy.init(
-  {
-    trophy_name: DataTypes.STRING,
-    description: DataTypes.TEXT,
-    date_earned: DataTypes.DATE,
-  },
-  { sequelize, modelName: 'Trophy', timestamps: false }
-);
+const { Trophy } = require('./models/Trophy.js')(sequelize, DataTypes);
+const { User } = require('./models/User.js')(sequelize, DataTypes);
+const { Log } = require('./models/Log.js')(sequelize, DataTypes);
+const { UserTrophies } = require('./models/UserTrophies.js')(sequelize, DataTypes);
 
-/**
- * Associations:
- * - 1:M with Logs
- * - 1:M with Friends
- */
-class User extends Model {
-  getAllUsers() {}
-}
-User.init(
-  {
-    discordId: {
-      type: DataTypes.STRING,
-      primaryKey: true,
-    },
-    username: DataTypes.STRING,
-    discordNickname: DataTypes.STRING,
-    date_joined: DataTypes.DATE,
-    time_studied: DataTypes.TIME,
-    phone: DataTypes.TEXT,
-    checkins: DataTypes.INTEGER,
-    friendList: DataTypes.TEXT,
-  },
-  { sequelize, modelName: 'User', timestamps: false }
-);
-
-/**
- * Associations:
- * - 1:M with User
- */
-class Log extends Model {}
-Log.init(
-  {
-    ci_description: DataTypes.TEXT,
-    co_description: DataTypes.TEXT,
-    ci_timestamp: {
-      type: DataTypes.TIME,
-      set(value) {
-        this.setDataValue('ci_timestamp', value);
-      },
-    },
-    co_timestamp: {
-      type: DataTypes.TIME,
-      set(value) {
-        this.setDataValue('co_timestamp', value);
-      },
-    },
-    messageId: DataTypes.STRING,
-    messageReplyId: DataTypes.STRING,
-    time_studied: {
-      // in unix epoch time
-      type: DataTypes.VIRTUAL,
-      get() {
-        return `${new Date(this.co_timestamp) - new Date(this.ci_timestamp)}`;
-      },
-      set(value) {
-        throw new Error('Do not try to set the `time_studied` value!');
-      },
-    },
-  },
-  { sequelize, modelName: 'Log', timestamps: true }
-);
-
-class UserTrophies extends Model {}
-UserTrophies.init(
-  {
-    UserId: {
-      type: DataTypes.STRING,
-      references: {
-        model: User,
-        key: 'discordId',
-      },
-    },
-    TrophyId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: Trophy,
-        key: 'id',
-      },
-    },
-  },
-  { sequelize, modelName: 'UserTrophies', timestamps: false }
-);
 Trophy.belongsToMany(User, { through: UserTrophies });
 User.belongsToMany(Trophy, { through: UserTrophies });
 
 User.hasMany(Log);
 Log.belongsTo(User);
 
-class Friends extends Model {}
-Friends.init(
-  {
-    UserId: {
-      type: DataTypes.STRING,
-      references: {
-        model: User,
-        key: 'discordId',
-      },
-    },
-    FriendId: {
-      type: DataTypes.STRING,
-      references: {
-        model: User,
-        key: 'discordId',
-      },
-    },
-  },
-  { sequelize, modelName: 'Friends', timestamps: false }
-);
 User.belongsToMany(User, { as: 'Parent', through: Friends });
 User.belongsToMany(User, { as: 'Sibling', through: Friends });
+
+
+
+
+
 
 client.once('ready', async () => {
   await sequelize.sync({ alter: false, force: false });
