@@ -9,5 +9,6 @@ module.exports = {
       content: `User: ${interaction.user.tag}`,
       ephemeral: true,
     });
+    console.log("/user command executed")
   },
 };

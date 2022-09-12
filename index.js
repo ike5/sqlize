@@ -83,15 +83,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-// } else if (commandName === 'showtotalcheckins') {
 
-// } else if (commandName === 'totaltime') {
-
-// } else {
-//   return interaction.reply('Not a valid command');
-// }
-// });
-//
 /**
  * Button interactions
  */
