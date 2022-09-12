@@ -2,14 +2,7 @@ const {
   Client,
   Collection,
   GatewayIntentBits,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   EmbedBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  InteractionType,
 } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -18,6 +11,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const { isIdUnique } = require('./modules/helper-functions');
 const { DB } = require('./models/DB');
 
+// Set intents for client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -43,30 +37,31 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-// // Reading event files
-// const eventsPath = path.join(__dirname, 'events');
-// const eventFiles = fs
-//   .readdirSync(eventsPath)
-//   .filter((file) => file.endsWith('.js'));
+// Reading event files
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs
+  .readdirSync(eventsPath)
+  .filter((file) => file.endsWith('.js'));
 
-// for (const file of eventFiles) {
-//   const filePath = path.join(eventsPath, file);
-//   const event = require(filePath);
-//   if (event.once) {
-//     client.once(event.name, (...args) => event.execute(...args));
-//   } else {
-//     client.on(event.name, (...args) => event.execute(...args));
-//   }
-// }
-
+for (const file of eventFiles) {
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
+  }
+}
 
 const { Log } = require('./models/Log.js')(DB.prototype.sequelize, DataTypes);
 
+// Prepare client once
 client.once('ready', async () => {
   await DB.prototype.sequelize.sync({ alter: false, force: false });
   console.log(`Logged in as ${client.user.tag}`);
 });
 
+// Slash Command interactions
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
@@ -82,7 +77,6 @@ client.on('interactionCreate', async (interaction) => {
     });
   }
 });
-
 
 /**
  * Button interactions

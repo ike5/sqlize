@@ -11,7 +11,7 @@ module.exports = {
     .setName('check')
     .setDescription('Command to check-in'),
   async execute(interaction) {
-    await interaction.reply('Check!');
+    // await interaction.reply('Check!');
 
     const ci_option = interaction.options.getString('description');
     const interactionUser = await interaction.guild.members.fetch(
