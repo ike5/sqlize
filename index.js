@@ -14,8 +14,9 @@ const {
 const fs = require('node:fs');
 const path = require('node:path');
 const { token } = require('./config.json');
-const { Sequelize, DataTypes, Model, Op } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const { isIdUnique } = require('./modules/helper-functions');
+const { DB } = require('./models/DB');
 
 const client = new Client({
   intents: [
@@ -60,24 +61,25 @@ for (const file of commandFiles) {
 /**
  * Initialize database in SQLite
  */
-const sequelize = new Sequelize('database', 'user', 'password', {
-  host: 'localhost',
-  dialect: 'sqlite',
-  logging: false,
-  // SQLite only
-  storage: 'database.sqlite',
-});
+// const sequelize = new Sequelize('database', 'user', 'password', {
+//   host: 'localhost',
+//   dialect: 'sqlite',
+//   logging: false,
+//   // SQLite only
+//   storage: 'database.sqlite',
+// });
+// const sequelize = new DB().getSequelize();
 
 // const { Trophy } = require('./models/Trophy.js')(sequelize, DataTypes);
 // const { User } = require('./models/User.js')(sequelize, DataTypes);
-const { Log } = require('./models/Log.js')(sequelize, DataTypes);
+const { Log } = require('./models/Log.js')(DB.prototype.sequelize, DataTypes);
 // const { UserTrophies } = require('./models/UserTrophies.js')(
 //   sequelize,
 //   DataTypes
 // );
 
 client.once('ready', async () => {
-  await sequelize.sync({ alter: false, force: false });
+  await DB.prototype.sequelize.sync({ alter: false, force: false });
   console.log(`Logged in as ${client.user.tag}`);
 });
 
@@ -96,62 +98,6 @@ client.on('interactionCreate', async (interaction) => {
     });
   }
 });
-
-
-// } else if (commandName === 'list') {
-//   //TODO: prevent system from crashing if a user doesn't exist
-//   const interactionUser = await interaction.guild.members.fetch(
-//     interaction.user.id
-//   );
-//   const nickName = interactionUser.nickname;
-//   const userName = interactionUser.user.username;
-//   const userId = interactionUser.id;
-
-//   // creates a new user if id isn't found in database
-//   await isIdUnique(userId).then((isUnique) => {
-//     if (isUnique) {
-//       const newUser = User.create({
-//         discordId: userId,
-//         discordNickname: nickName,
-//         username: userName,
-//         date_joined: new Date().getTime(),
-//       });
-//       console.log(`${newUser} has been created!`);
-//     }
-//   });
-
-//   try {
-//     // Find all check-ins with a specific userId
-//     const user_check_ins = await Log.findAll({
-//       where: {
-//         UserDiscordId: `${userId}`,
-//       },
-//     });
-
-//     // Create a string list of all check-in descriptions
-//     let list = `\n`;
-//     user_check_ins.forEach((element) => {
-//       let l = `\n`;
-//       JSON.parse(element.ci_description).forEach((e) => {
-//         l += `\t- ${e.trim()}\n`;
-//       });
-
-//       // Get time posted
-//       let date = new Date(element.ci_timestamp).toLocaleDateString('en-US');
-//       let time = new Date(element.ci_timestamp).toLocaleTimeString('en-US');
-//       list += `${date} *${time}* ${l}\n`;
-//     });
-
-//     interaction.reply({ content: list, ephemeral: true });
-
-//     console.log(`${userName} called 'list'`);
-//   } catch (err) {
-//     console.error(err);
-//     interaction.reply({
-//       content: `Something went wrong.\nPlease wait a moment then try again.`,
-//       ephemeral: true,
-//     });
-//   }
 
 //   /**
 //    * Displays list of all users who are currently online and aren't bots

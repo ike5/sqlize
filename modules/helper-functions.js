@@ -1,3 +1,4 @@
+const {User} = require('../models/User.js')
 /**
  * Checks to see if a user already exists in the database.
  *
@@ -8,7 +9,7 @@
  *  - true if user doesn't exist
  */
 async function isIdUnique(id) {
-  return User.count({
+  return await User.count({
     where: {
       discordId: id,
     },
