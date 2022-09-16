@@ -7,9 +7,10 @@ const {
 const fs = require('node:fs');
 const path = require('node:path');
 const { token } = require('./config.json');
-const { Sequelize, DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const { isIdUnique } = require('./modules/helper-functions');
 const { DB } = require('./models/DB');
+const { Log } = require('./models/Log.js')(DataTypes);
 
 // Set intents for client
 const client = new Client({
@@ -31,6 +32,7 @@ const commandFiles = fs
   .readdirSync(commandsPath)
   .filter((file) => file.endsWith('.js'));
 
+// Map command files to command names
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
   const command = require(filePath);
@@ -43,6 +45,7 @@ const eventFiles = fs
   .readdirSync(eventsPath)
   .filter((file) => file.endsWith('.js'));
 
+// Map event files to event names
 for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
   const event = require(filePath);
@@ -52,8 +55,6 @@ for (const file of eventFiles) {
     client.on(event.name, (...args) => event.execute(...args));
   }
 }
-
-const { Log } = require('./models/Log.js')(DB.prototype.sequelize, DataTypes);
 
 // Prepare client once
 client.once('ready', async () => {

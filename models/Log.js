@@ -1,5 +1,6 @@
 const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
+const { DB } = require('../models/DB.js');
+module.exports = (DataTypes) => {
   /**
    * Associations:
    * - 1:M with User
@@ -38,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
     },
-    { sequelize, modelName: 'Log', timestamps: true }
+    { sequelize: DB.prototype.sequelize, modelName: 'Log', timestamps: true }
   );
   return Log;
 };

@@ -1,3 +1,8 @@
+/**
+ * Making a singleton: Keep the database instance (sequelize) static by keeping it
+ * as a prototype. This way it can be accessed everywhere throughout
+ * the application .
+ */
 const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize('database', 'user', 'password', {
@@ -8,15 +13,14 @@ const sequelize = new Sequelize('database', 'user', 'password', {
   storage: 'database.sqlite',
 });
 
-
-const DB = {}
+const database = {};
 
 let proto = {
-    sequelize: sequelize,
-}
+  sequelize: sequelize,
+};
 
-DB.prototype = proto;
+database.prototype = proto;
 
 module.exports = {
-    DB
-}
+  DB: database,
+};

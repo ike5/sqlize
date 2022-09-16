@@ -1,6 +1,7 @@
 'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
+const { Model, DataTypes } = require('sequelize');
+const { DB } = require('./DB');
+module.exports = () => {
   class User extends Model {
     getAllUsers() {}
     static associate(models) {
@@ -24,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       checkins: DataTypes.INTEGER,
       friendList: DataTypes.TEXT,
     },
-    { sequelize, modelName: 'User', timestamps: false }
+    { sequelize: DB.prototype.sequelize, modelName: 'User', timestamps: false }
   );
   return User;
 };

@@ -1,9 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { DataTypes } = require('sequelize');
 const { isIdUnique } = require('../modules/helper-functions');
-const {DB} = require('../models/DB');
-const { User } = require('../models/User.js')(DB.prototype.sequelize, DataTypes);
-const { Log } = require('../models/Log.js')(DB.prototype.sequelize, DataTypes);
+const { User } = require('../models/User.js');
+const { Log } = require('../models/Log.js')(DataTypes);
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('list')
