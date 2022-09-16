@@ -12,7 +12,7 @@ const sequelize = new Sequelize('database', 'user', 'password', {
 const DB = {}
 
 let proto = {
-    sequelize: sequelize
+    sequelize: sequelize,
 }
 
 DB.prototype = proto;
