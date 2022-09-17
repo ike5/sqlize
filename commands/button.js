@@ -1,3 +1,6 @@
+/**
+ * Currently not in use
+ */
 const {
   ActionRowBuilder,
   ButtonBuilder,

@@ -1,3 +1,6 @@
+/**
+ * Allows a user to check-in
+ */
 const {
   SlashCommandBuilder,
   ActionRowBuilder,
