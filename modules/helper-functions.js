@@ -1,4 +1,4 @@
-const { User } = require('../models/User.js');
+const { db } = require('../modules/initialize-models');
 /**
  * Checks to see if a user already exists in the database.
  *
@@ -10,7 +10,7 @@ const { User } = require('../models/User.js');
  */
 async function isIdUnique(id) {
   //FIXME Fix the count() method not being found
-  return await User.count({
+  return await db.User.count({
     where: {
       discordId: id,
     },

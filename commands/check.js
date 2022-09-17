@@ -5,7 +5,7 @@ const {
   ButtonStyle,
 } = require('discord.js');
 const { isIdUnique } = require('../modules/helper-functions');
-const { User } = require('../models/User.js');
+const {db} = require('../modules/initialize-models')
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('check')
@@ -44,7 +44,7 @@ module.exports = {
 
     try {
       // Create a Log entry
-      const log_entry = await Log.create({
+      const log_entry = await db.Log.create({
         // Get list delineated by commas
         ci_description: JSON.stringify(ci_option.split(',')),
         ci_timestamp: new Date().getTime(),
