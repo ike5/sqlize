@@ -1,27 +1,34 @@
 'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
-    }
+const { Sequelize } = require('sequelize');
+class User extends Sequelize.Model {
+  static associate(models) {
+    this.belongsToMany(models.Trophy, { through: models.UserTrophies });
+    this.hasMany(models.Log);
+    this.belongsToMany(this, { as: 'Parent', through: models.Friends });
+    this.belongsToMany(this, { as: 'Sibling', through: models.Friends });
   }
-  User.init(
-    {
-      username: DataTypes.STRING,
-      phone: DataTypes.STRING,
-      date_joined: DataTypes.STRING,
-      time_studied_together: DataTypes.STRING,
-    },
-    {
-      sequelize,
-      modelName: 'User',
-    }
-  );
-  return User;
-};
+  static init(sequelize, DataTypes) {
+    return super.init(
+      {
+        discordId: {
+          type: DataTypes.STRING,
+          primaryKey: true,
+        },
+        username: DataTypes.STRING,
+        discordNickname: DataTypes.STRING,
+        date_joined: DataTypes.DATE,
+        time_studied: DataTypes.TIME,
+        phone: DataTypes.TEXT,
+        checkins: DataTypes.INTEGER,
+        friendList: DataTypes.TEXT,
+      },
+      {
+        sequelize,
+        modelName: 'User',
+        timestamps: false,
+      }
+    );
+  }
+}
+
+module.exports = User;
