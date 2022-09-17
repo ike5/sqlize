@@ -33,11 +33,17 @@ class Log extends Model {
             }`;
           },
           set(value) {
-            throw new Error('Do not try to set the `time_studied` value!');
+            throw new Error(
+              `Do not try to set the time_studied value!: ${value}`
+            );
           },
         },
       },
-      { sequelize, modelName: 'Log', timestamps: true }
+      {
+        sequelize,
+        modelName: 'Log',
+        timestamps: true,
+      }
     );
   }
 }

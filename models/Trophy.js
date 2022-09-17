@@ -1,9 +1,8 @@
-'use strict'
+'use strict';
 const { Model } = require('sequelize');
 
 class Trophy extends Model {
   static associate(models) {
-    // define association here
     this.belongsToMany(models.User, { through: models.UserTrophies });
   }
   static init(sequelize, DataTypes) {
@@ -13,7 +12,11 @@ class Trophy extends Model {
         description: DataTypes.TEXT,
         date_earned: DataTypes.DATE,
       },
-      { sequelize, modelName: 'Trophy', timestamps: false }
+      {
+        sequelize,
+        modelName: 'Trophy',
+        timestamps: false,
+      }
     );
   }
 }

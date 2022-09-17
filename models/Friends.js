@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 const { Model } = require('sequelize');
 const { User } = require('../models/User');
 class Friends extends Model {
@@ -20,7 +20,11 @@ class Friends extends Model {
           },
         },
       },
-      { sequelize, modelName: 'Friends', timestamps: false }
+      {
+        sequelize,
+        modelName: 'Friends',
+        timestamps: false,
+      }
     );
   }
 }

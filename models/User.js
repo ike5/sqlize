@@ -1,6 +1,6 @@
 'use strict';
-const { Sequelize } = require('sequelize');
-class User extends Sequelize.Model {
+const { Model } = require('sequelize');
+class User extends Model {
   static associate(models) {
     this.belongsToMany(models.Trophy, { through: models.UserTrophies });
     this.hasMany(models.Log);

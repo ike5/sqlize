@@ -1,5 +1,5 @@
 # Purpose
-> This Discord bot provides slash commands to allow users to tally study sessions, amount of time spent studying together, and provide rewards for amount of time studied together with the ultimate purpose of reinforcing a community of studying. 
+> This Discord bot provides slash commands to allow users to tally study sessions, calculate total amount of time spent studying together, and provide rewards based on the amount of time studied together with the ultimate aim of reinforcing a community of studying. 
 
 ## Setup
 - Create a `config.json` file in the root folder

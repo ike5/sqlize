@@ -2,13 +2,6 @@ const { Client, GatewayIntentBits, Partials, Intents } = require('discord.js');
 const { token } = require('../config.json');
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 
-const sequelize = new Sequelize('database', 'user', 'password', {
-  host: 'localhost',
-  dialect: 'sqlite',
-  logging: false,
-  // SQLite only
-  storage: 'database.sqlite',
-});
 
 const client = new Client({
   intents: [

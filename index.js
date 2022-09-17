@@ -42,7 +42,6 @@ const eventFiles = fs
   .readdirSync(eventsPath)
   .filter((file) => file.endsWith('.js'));
 
-// Map event files to event names
 for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
   const event = require(filePath);
@@ -53,14 +52,14 @@ for (const file of eventFiles) {
   }
 }
 
-// Prepare client once
-client.once('ready', async () => {
-  // await db.sequelize.sync({
-  //   force: true,
-  //   alter: false
-  // });
-  console.log(`Logged in as ${client.user.tag}`);
-});
+// // Prepare client once
+// client.once('ready', async () => {
+//   // await db.sequelize.sync({
+//   //   force: true,
+//   //   alter: false
+//   // });
+//   console.log(`Logged in as ${client.user.tag}`);
+// });
 
 /**
  * Slash command interactions

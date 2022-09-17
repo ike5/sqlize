@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 const { Model } = require('sequelize');
 const { User } = require('../models/User');
 const { Trophy } = require('../models/Trophy.js');
@@ -22,7 +22,11 @@ class UserTrophies extends Model {
           },
         },
       },
-      { sequelize, modelName: 'UserTrophies', timestamps: false }
+      {
+        sequelize,
+        modelName: 'UserTrophies',
+        timestamps: false,
+      }
     );
   }
 }
