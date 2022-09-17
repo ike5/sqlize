@@ -6,6 +6,7 @@ const {
 } = require('discord.js');
 const { isIdUnique } = require('../modules/helper-functions');
 const {db} = require('../modules/initialize-models')
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('check')
