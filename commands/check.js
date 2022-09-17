@@ -7,7 +7,6 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require('discord.js');
-const { isIdUnique } = require('../modules/helper-functions');
 const {db} = require('../modules/initialize-models')
 
 module.exports = {
@@ -34,17 +33,31 @@ module.exports = {
     );
 
     // Create user if id isn't found in database
-    await isIdUnique(userId).then((isUnique) => {
-      if (isUnique) {
-        const u = User.create({
-          discordId: userId,
-          discordNickname: nickName,
-          username: userName,
-          date_joined: new Date().getTime(),
-        });
-        console.log(`${u} has been created!`);
-      }
+    // await isIdUnique(userId).then((isUnique) => {
+    //   if (isUnique) {
+    //     const u = User.create({
+    //       discordId: userId,
+    //       discordNickname: nickName,
+    //       username: userName,
+    //       date_joined: new Date().getTime(),
+    //     });
+    //     console.log(`${u} has been created!`);
+    //   }
+    // });
+    const [user, created] = await db.User.findOrCreate({
+      where: { discordId: userId },
+      defaults: {
+        discordNickname: nickName,
+        username: userName,
+        date_joined: new Date().getTime(),
+      },
     });
+
+    if (created) {
+      console.log(user.username);
+      console.log(user.discordNickname);
+      console.log(user.date_joined);
+    }
 
     try {
       // Create a Log entry

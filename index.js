@@ -54,10 +54,13 @@ for (const file of eventFiles) {
 }
 
 // Prepare client once
-// client.once('ready', async () => {
-//   await sequelize.sync({ alter: false, force: false });
-//   console.log(`Logged in as ${client.user.tag}`);
-// });
+client.once('ready', async () => {
+  // await db.sequelize.sync({
+  //   force: true,
+  //   alter: false
+  // });
+  console.log(`Logged in as ${client.user.tag}`);
+});
 
 /**
  * Slash command interactions
