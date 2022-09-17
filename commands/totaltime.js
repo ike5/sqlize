@@ -45,5 +45,6 @@ module.exports = {
       embeds: [timeStudiedEmbed],
       components: [],
     });
+    console.log('/totaltime executed')
   },
 };

@@ -17,6 +17,7 @@ module.exports = {
     const userId = interactionUser.id;
 
     // Add user to database if doesn't exist yet
+
     const [user, created] = await db.User.findOrCreate({
       where: { discordId: userId },
       defaults: {

@@ -12,5 +12,6 @@ module.exports = {
       content: `Server name: ${interaction.guild.name}`,
       ephemeral: true,
     });
+    console.log('/server executed')
   },
 };
