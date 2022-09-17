@@ -3,7 +3,7 @@ module.exports = {
   name: 'ready',
   once: true,
   execute(client) {
-    db.sequelize.sync({ alter: false, force: false });
+    db.sequelize.sync({ force: false, alter: false }); // DO NOT CHANGE THIS VALUE
     console.log(`Ready! Logged in as ${client.user.tag}`);
   },
 };

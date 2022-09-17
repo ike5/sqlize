@@ -9,7 +9,6 @@ module.exports = {
     .setName('list')
     .setDescription('Lists all check-ins'),
   async execute(interaction) {
-    //TODO: prevent system from crashing if a user doesn't exist
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
     );
@@ -17,19 +16,7 @@ module.exports = {
     const userName = interactionUser.user.username;
     const userId = interactionUser.id;
 
-    // creates a new user if id isn't found in database
-    // await isIdUnique(userId).then((isUnique) => {
-    //   if (isUnique) {
-    //     const newUser = User.create({
-    //       discordId: userId,
-    //       discordNickname: nickName,
-    //       username: userName,
-    //       date_joined: new Date().getTime(),
-    //     });
-    //     console.log(`${newUser} has been created!`);
-    //   }
-    // });
-
+    // Add user to database if doesn't exist yet
     const [user, created] = await db.User.findOrCreate({
       where: { discordId: userId },
       defaults: {
@@ -39,6 +26,7 @@ module.exports = {
       },
     });
 
+    // TEST
     if (created) {
       console.log(user.username);
       console.log(user.discordNickname);

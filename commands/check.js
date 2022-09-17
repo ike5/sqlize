@@ -7,15 +7,13 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require('discord.js');
-const {db} = require('../modules/initialize-models')
+const { db } = require('../modules/initialize-models');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('check')
     .setDescription('Command to check-in'),
   async execute(interaction) {
-    // await interaction.reply('Check!');
-
     const ci_option = interaction.options.getString('description');
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
@@ -32,18 +30,7 @@ module.exports = {
         .setStyle(ButtonStyle.Primary)
     );
 
-    // Create user if id isn't found in database
-    // await isIdUnique(userId).then((isUnique) => {
-    //   if (isUnique) {
-    //     const u = User.create({
-    //       discordId: userId,
-    //       discordNickname: nickName,
-    //       username: userName,
-    //       date_joined: new Date().getTime(),
-    //     });
-    //     console.log(`${u} has been created!`);
-    //   }
-    // });
+    // If a user doesn't exist, add them to the database
     const [user, created] = await db.User.findOrCreate({
       where: { discordId: userId },
       defaults: {
@@ -53,6 +40,7 @@ module.exports = {
       },
     });
 
+    // TEST
     if (created) {
       console.log(user.username);
       console.log(user.discordNickname);

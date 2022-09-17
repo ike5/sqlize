@@ -37,29 +37,34 @@ for (const file of commandFiles) {
 }
 
 // Reading event files
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs
-  .readdirSync(eventsPath)
-  .filter((file) => file.endsWith('.js'));
+// const eventsPath = path.join(__dirname, 'events');
+// const eventFiles = fs
+//   .readdirSync(eventsPath)
+//   .filter((file) => file.endsWith('.js'));
 
-for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
-  const event = require(filePath);
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args));
-  }
-}
+// for (const file of eventFiles) {
+//   const filePath = path.join(eventsPath, file);
+//   const event = require(filePath);
+//   if (event.once) {
+//     client.once(event.name, (...args) => event.execute(...args));
+//   } else {
+//     client.on(event.name, (...args) => event.execute(...args));
+//   }
+// }
 
 // // Prepare client once
-// client.once('ready', async () => {
-//   // await db.sequelize.sync({
-//   //   force: true,
-//   //   alter: false
-//   // });
-//   console.log(`Logged in as ${client.user.tag}`);
-// });
+client.once('ready', async () => {
+  try {
+    await db.sequelize.sync({
+      force: true,
+      alter: false,
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  console.log(`Logged in as ${client.user.tag}`);
+});
 
 /**
  * Slash command interactions

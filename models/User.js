@@ -2,10 +2,7 @@
 const { Model } = require('sequelize');
 class User extends Model {
   static associate(models) {
-    this.belongsToMany(models.Trophy, { through: models.UserTrophies });
     this.hasMany(models.Log);
-    this.belongsToMany(this, { as: 'Parent', through: models.Friends });
-    this.belongsToMany(this, { as: 'Sibling', through: models.Friends });
   }
   static init(sequelize, DataTypes) {
     return super.init(
