@@ -7,8 +7,9 @@ const {
 const fs = require('node:fs');
 const path = require('node:path');
 const { token } = require('./config.json');
+const { db } = require('./modules/initialize-models');
 
-// Set intents for client
+// Set Discord intents for client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -58,16 +59,21 @@ for (const file of eventFiles) {
 //   console.log(`Logged in as ${client.user.tag}`);
 // });
 
-// Slash Command interactions
+/**
+ * Slash command interactions
+ */
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
 
   if (!command) return;
+
   try {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
+
+    // display an ephemeral message to user
     await interaction.reply({
       content: 'There was an error while executing this command',
       ephemeral: true,
@@ -83,30 +89,33 @@ client.on('interactionCreate', async (interaction) => {
 
   const { customId } = interaction;
   console.log(customId);
+
+  //TODO: Refactor button events such as 'checkout' to the events folder
   if (customId === 'checkout') {
     console.log(interaction.message.content);
-    // console.log(`user id: s${interaction.user.id}`)
 
-    // Checks the user id for who created the message
+    // Cross-checks user id of person who pressed the button
+    // against the person who created the check-in Log. If they match,
+    // finds the current user's previous check-in Log.
     if (interaction.message.content.substring(2, 20) === interaction.user.id) {
-      const previousCheckin = await Log.findOne({
+      const previousCheckin = await db.Log.findOne({
         where: {
           UserDiscordId: interaction.user.id,
         },
         order: [['createdAt', 'DESC']],
       });
-      // console.log(previousCheckin);
+
       previousCheckin.setDataValue('co_timestamp', new Date().getTime());
-      previousCheckin.reload();
+      previousCheckin.reload(); // May not be necessary
       previousCheckin.save();
-      // console.log(previousCheckin);
-      let val = previousCheckin.ci_description;
-      let arr = JSON.parse(val);
+
+      let checkin = previousCheckin.ci_description;
+      let parsedCheckinArray = JSON.parse(checkin);
 
       let str = `CHECK-OUT: ${interaction.user}\n`;
       for (const key in arr) {
-        if (Object.hasOwnProperty.call(arr, key)) {
-          const element = arr[key];
+        if (Object.hasOwnProperty.call(parsedCheckinArray, key)) {
+          const element = parsedCheckinArray[key];
           str += `- ${element.trim()}\n`;
         }
       }
