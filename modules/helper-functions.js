@@ -1,4 +1,4 @@
-const {User} = require('../models/User.js')
+const { User } = require('../models/User.js');
 /**
  * Checks to see if a user already exists in the database.
  *

@@ -1,8 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { DataTypes } = require('sequelize');
-const { isIdUnique } = require('../modules/helper-functions');
-const { User } = require('../models/User.js');
-const { Log } = require('../models/Log.js')(DataTypes);
+const { db } = require('../modules/initialize-models.js');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('list')
@@ -30,7 +28,7 @@ module.exports = {
     // });
 
     //FIXME Fix the findOrCreate() method
-    const [user, created] = await User.findOrCreate({
+    const [user, created] = await db.User.findOrCreate({
       where: { discordId: userId },
       defaults: {
         discordNickname: nickName,
@@ -38,6 +36,7 @@ module.exports = {
         date_joined: new Date().getTime(),
       },
     });
+
     if (created) {
       console.log(user.username);
       console.log(user.discordNickname);
@@ -46,7 +45,7 @@ module.exports = {
 
     try {
       // Find all check-ins with a specific userId
-      const user_check_ins = await Log.findAll({
+      const user_check_ins = await db.Log.findAll({
         where: {
           UserDiscordId: `${userId}`,
         },

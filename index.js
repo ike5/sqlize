@@ -7,10 +7,6 @@ const {
 const fs = require('node:fs');
 const path = require('node:path');
 const { token } = require('./config.json');
-const { DataTypes } = require('sequelize');
-const { isIdUnique } = require('./modules/helper-functions');
-const { DB } = require('./models/DB');
-const { Log } = require('./models/Log.js')(DataTypes);
 
 // Set intents for client
 const client = new Client({
@@ -57,10 +53,10 @@ for (const file of eventFiles) {
 }
 
 // Prepare client once
-client.once('ready', async () => {
-  await DB.prototype.sequelize.sync({ alter: false, force: false });
-  console.log(`Logged in as ${client.user.tag}`);
-});
+// client.once('ready', async () => {
+//   await sequelize.sync({ alter: false, force: false });
+//   console.log(`Logged in as ${client.user.tag}`);
+// });
 
 // Slash Command interactions
 client.on('interactionCreate', async (interaction) => {
