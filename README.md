@@ -1,6 +1,12 @@
 # Purpose
 > This Discord bot provides slash commands to allow users to tally study sessions, amount of time spent studying together, and provide rewards for amount of time studied together with the ultimate purpose of reinforcing a community of studying. 
 
+## Setup
+- Create a `config.json` file in the root folder
+    - `token` the provided Discord bot token
+    - `clientId`
+    - `guildId`
+    - `guildIdDayOwls`
 
 ## How to start the application
 
