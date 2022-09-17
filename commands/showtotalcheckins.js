@@ -1,5 +1,9 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { Log } = require('../models/Log');
+/**
+ * Displays an integer value of the total number of check-ins
+ */
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { db } = require('../modules/initialize-models');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('showtotalcheckins')
@@ -8,7 +12,7 @@ module.exports = {
     // Get logs for user
 
     //FIXME: Fix undefined 'count' method
-    const amount = await Log.count({
+    const amount = await db.Log.count({
       where: {
         UserDiscordId: interaction.user.id,
       },

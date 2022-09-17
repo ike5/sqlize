@@ -1,12 +1,16 @@
-const { SlashCommandBuilder } = require('discord.js');
-const {Log} = require('../models/Log')
+/**
+ * Displays the total time studied
+ */
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { Op } = require('sequelize');
+const { db } = require('../modules/initialize-models');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('totaltime')
     .setDescription('Gets total time studied'),
   async execute(interaction) {
-    //FIXME Fix findAll() method not being found
-    const all_logs = await Log.findAll({
+    const all_logs = await db.Log.findAll({
       where: {
         [Op.and]: [
           { UserDiscordId: interaction.user.id },
@@ -32,7 +36,7 @@ module.exports = {
     let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
     let hours = Math.floor(time_elapsed / 1000 / 60 / 60);
 
-    // Create embed
+    //FIXME: Fix time displayed in embed
     const timeStudiedEmbed = new EmbedBuilder()
       .setTitle('Time studied')
       .setDescription(`${hours}h:${minutes}m:${seconds}s`);

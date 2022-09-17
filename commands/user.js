@@ -1,3 +1,6 @@
+/**
+ * Displays the current username
+ */
 const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
