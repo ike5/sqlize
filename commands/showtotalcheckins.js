@@ -9,9 +9,8 @@ module.exports = {
     .setName('showtotalcheckins')
     .setDescription('Shows all your check-ins'),
   async execute(interaction) {
+    
     // Get logs for user
-
-    //FIXME: Fix undefined 'count' method
     const amount = await db.Log.count({
       where: {
         UserDiscordId: interaction.user.id,

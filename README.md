@@ -10,45 +10,44 @@
 
 ### Commands
 - [x] `/check`          
-- [ ] `/checkin`        future command
-- [ ] `/checkout`       A button that opens a modal on your check in (and makes it easy to calculate time)
+- [x] `/checkout`       A button that opens a modal on your check-in (and makes it easy to calculate time)
 - [x] `/showtotalcheckins`
-- [ ] `/showtimestudied`
+- [x] `/showtimestudied`
 - [x] `/showallcheckins`
 - [x] `/showallusers`   A command that shows all users (including idle)
 - [x] `/online`         Shows all users online that are not bots nor idle
-- `/showlastcheckin`
-- `/showlasttwocheckins`
-- `/showlastcheckins`
-- `/findcheckinbydate`
-- `/findcheckinbytopic`
-- `/findcheckinbyid`
-- `/findcheckin`
-    - `/deletecheckin`
-    - `/updatecheckin`
-    - `/updatecheckout`
-- `/updatelastcheckin`
-- `/updatelastcheckout`
-- `/deletelastcheckin`  deletes entire row
-- `/deletelastcheckout` only deletes the checkout timestamp and notes
-- `/deleteallcheckins`
-- `/deleteallmydata`    
-    - `/areyousure`
-- `/showusercheckins`   shows 10 most recent checkins by everyone
-- `/whoisstudying`      displays everyone online who is contributing to your list of students
-> - `/keepmeaccountable`  
+- [ ] `/showlastcheckin`
+- [ ] `/showlasttwocheckins`
+- [ ] `/showlastcheckins`
+- [ ] `/findcheckinbydate`
+- [ ] `/findcheckinbytopic`
+- [ ] `/findcheckinbyid`
+- [ ] `/findcheckin`
+    - [ ] `/deletecheckin`
+    - [ ] `/updatecheckin`
+    - [ ] `/updatecheckout`
+- [ ] `/updatelastcheckin`
+- [ ] `/updatelastcheckout`
+- [ ] `/deletelastcheckin`  deletes entire row
+- [ ] `/deletelastcheckout` only deletes the checkout timestamp and notes
+- [ ] `/deleteallcheckins`
+- [ ] `/deleteallmydata`    
+    - [ ] `/areyousure`
+- [ ] `/showusercheckins`   shows 10 most recent checkins by everyone
+- [ ] `/whoisstudying`      displays everyone online who is contributing to your list of students
+> - [ ] `/keepmeaccountable`  
 > initiates a push to all people who are online, who can then click a button to show their support.
-- `/droptable <table name>` admin command permissions
-- `/synctable <table name>` admin command permissions
-- `/friends`            lists users and time spent studying together
-- `/trophies`           lists trophies earned
-- `/addsms`             add your phone number so others can text you
-- `/smsuser`            message a user for a single time reminder
-- `/30mincountdown`     timer that counts down (use on a separate instance)
-- `/smsadmin`
-- `/showallmydata`
-- `/whatclubami`
-- `/secretsociety`      will show commands to only those in socieites
+- [ ] `/droptable <table name>` admin command permissions
+- [ ] `/synctable <table name>` admin command permissions
+- [ ] `/friends`            lists users and time spent studying together
+- [ ] `/trophies`           lists trophies earned
+- [ ] `/addsms`             add your phone number so others can text you
+- [ ] `/smsuser`            message a user for a single time reminder
+- [ ] `/30mincountdown`     timer that counts down (use on a separate instance)
+- [ ] `/smsadmin`
+- [ ] `/showallmydata`
+- [ ] `/whatclubami`
+- [ ] `/secretsociety`      will show commands to only those in socieites
 
 
 

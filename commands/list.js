@@ -30,7 +30,6 @@ module.exports = {
     //   }
     // });
 
-    //FIXME Fix the findOrCreate() method
     const [user, created] = await db.User.findOrCreate({
       where: { discordId: userId },
       defaults: {

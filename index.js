@@ -120,7 +120,6 @@ client.on('interactionCreate', async (interaction) => {
         }
       }
 
-      //TODO: total time studying
       let time_elapsed = previousCheckin.time_studied;
       let seconds = Math.floor((time_elapsed / 1000) % 60);
       let minutes = Math.floor((time_elapsed / 1000 / 60) % 60);
