@@ -1,3 +1,6 @@
+/**
+ * Shows current server name (should be Day Owls)
+ */
 const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {

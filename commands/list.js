@@ -1,10 +1,13 @@
+/**
+ * Lists all check-ins
+ */
 const { SlashCommandBuilder } = require('discord.js');
 const { db } = require('../modules/initialize-models.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('list')
-    .setDescription('Lists everything'),
+    .setDescription('Lists all check-ins'),
   async execute(interaction) {
     //TODO: prevent system from crashing if a user doesn't exist
     const interactionUser = await interaction.guild.members.fetch(

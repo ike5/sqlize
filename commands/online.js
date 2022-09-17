@@ -1,4 +1,8 @@
+/**
+ * Shows all users who are currently online. Excludes bots
+ */
 const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('online')
