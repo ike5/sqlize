@@ -1,5 +1,5 @@
 /**
- * Message creations
+ * Currently not in use
  */
  client.on('messageCreate', async (message) => {
     if (message.author.bot) {

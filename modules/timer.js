@@ -1,3 +1,6 @@
+/**
+ * Currently not used
+ */
 let diffInMinutes = 30;
 var countDownDate = new Date(new Date().getTime() + diffInMinutes * 60000);
 

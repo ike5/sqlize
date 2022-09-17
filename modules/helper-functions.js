@@ -1,13 +1,6 @@
 const { db } = require('../modules/initialize-models');
-/**
- * Checks to see if a user already exists in the database.
- *
- * Parameters:
- *  - discordId
- *
- * Returns:
- *  - true if user doesn't exist
- */
+
+// Checks to see if a user already exists in the database.
 async function isIdUnique(id) {
   //FIXME Fix the count() method not being found
   return await db.User.count({
