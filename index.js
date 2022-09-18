@@ -52,7 +52,6 @@ for (const file of eventFiles) {
   }
 }
 
-
 /**
  * Slash command interactions
  */
