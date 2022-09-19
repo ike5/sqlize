@@ -15,27 +15,8 @@ module.exports = {
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
     );
-    const nickName = interactionUser.nickname;
     const userName = interactionUser.user.username;
     const userId = interactionUser.id;
-
-    // Add user to database if doesn't exist yet
-
-    const [user, created] = await db.User.findOrCreate({
-      where: { discordId: userId },
-      defaults: {
-        discordNickname: nickName,
-        username: userName,
-        date_joined: new Date().getTime(),
-      },
-    });
-
-    // TEST
-    if (created) {
-      console.log(user.username);
-      console.log(user.discordNickname);
-      console.log(user.date_joined);
-    }
 
     try {
       // Find all check-ins with a specific userId
@@ -44,6 +25,8 @@ module.exports = {
           UserDiscordId: `${userId}`,
         },
       });
+
+      //FIXME: if no user check-ins, catch error
 
       // Create a string list of all check-in descriptions
       let list = `\n`;
