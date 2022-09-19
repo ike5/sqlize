@@ -1,5 +1,6 @@
-'use strict';
-const { Model } = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
+const { userData } = require("../modules/token-system");
 class User extends Model {
   static associate(models) {
     this.hasMany(models.Log);
@@ -7,21 +8,20 @@ class User extends Model {
   static init(sequelize, DataTypes) {
     return super.init(
       {
+        checkins: DataTypes.INTEGER,
         discordId: {
           type: DataTypes.STRING,
           primaryKey: true,
         },
-        username: DataTypes.STRING,
-        discordNickname: DataTypes.STRING,
-        date_joined: DataTypes.DATE,
         time_studied: DataTypes.TIME,
-        phone: DataTypes.TEXT,
-        checkins: DataTypes.INTEGER,
-        friendList: DataTypes.TEXT,
+        user_data: {
+          type: DataTypes.STRING,
+          defaultValue: JSON.stringify(Object.assign(userData)),
+        },
       },
       {
         sequelize,
-        modelName: 'User',
+        modelName: "User",
         timestamps: false,
       }
     );

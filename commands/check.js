@@ -1,57 +1,46 @@
 /**
- * Allows a user to check-in
+ * Allows a user to check-in, or a new user to create
+ * an account then check-in.
  */
 const {
   SlashCommandBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-} = require('discord.js');
-const { db } = require('../modules/initialize-models');
+} = require("discord.js");
+const { db } = require("../modules/initialize-models");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('check')
-    .setDescription('Command to check-in'),
+    .setName("check")
+    .setDescription("Command to check-in"),
   async execute(interaction) {
-    const ci_option = interaction.options.getString('description');
+    const ci_option = interaction.options.getString("description");
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
     );
-    const nickName = interactionUser.nickname;
-    const userName = interactionUser.user.username; // use interaction.user instead
+
+    const userName = interactionUser.user.username; // use this instead of an object
     const userId = interactionUser.id;
+    console.log(`Username: ${userName}`);
+    console.log(`UserId: ${userId}`);
 
     // Button used for CHECKOUT
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId('checkout')
-        .setLabel('Check-out')
+        .setCustomId("checkout")
+        .setLabel("Check-out")
         .setStyle(ButtonStyle.Primary)
     );
 
-    // If a user doesn't exist, add them to the database
-    const [user, created] = await db.User.findOrCreate({
-      where: { discordId: userId },
-      defaults: {
-        discordNickname: nickName,
-        username: userName,
-        date_joined: new Date().getTime(),
-      },
-    });
-
-    // TEST
-    if (created) {
-      console.log(user.username);
-      console.log(user.discordNickname);
-      console.log(user.date_joined);
-    }
+    // If a user doesn't exist, add them to the databas3
+    require("../modules/validate-user")(interaction);
 
     try {
       // Create a Log entry
       const log_entry = await db.Log.create({
         // Get list delineated by commas
-        ci_description: JSON.stringify(ci_option.split(',')),
+        ci_description: JSON.stringify(ci_option.split(",")),
         ci_timestamp: new Date().getTime(),
         UserDiscordId: userId,
       });
