@@ -15,6 +15,9 @@ module.exports = {
     .setName("check")
     .setDescription("Command to check-in"),
   async execute(interaction) {
+    // validate user
+    require("../modules/validate-user")(interaction);
+
     const ci_option = interaction.options.getString("description");
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
@@ -32,9 +35,6 @@ module.exports = {
         .setLabel("Check-out")
         .setStyle(ButtonStyle.Primary)
     );
-
-    // If a user doesn't exist, add them to the databas3
-    require("../modules/validate-user")(interaction);
 
     try {
       // Create a Log entry

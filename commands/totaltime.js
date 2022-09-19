@@ -1,15 +1,18 @@
 /**
  * Displays the total time studied
  */
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { Op } = require('sequelize');
-const { db } = require('../modules/initialize-models');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { Op } = require("sequelize");
+const { db } = require("../modules/initialize-models");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('totaltime')
-    .setDescription('Gets total time studied'),
+    .setName("totaltime")
+    .setDescription("Gets total time studied"),
   async execute(interaction) {
+    // validate user
+    require("../modules/validate-user")(interaction);
+
     const all_logs = await db.Log.findAll({
       where: {
         [Op.and]: [
@@ -38,13 +41,13 @@ module.exports = {
 
     //FIXME: Fix time displayed in embed
     const timeStudiedEmbed = new EmbedBuilder()
-      .setTitle('Time studied')
+      .setTitle("Time studied")
       .setDescription(`${hours}h:${minutes}m:${seconds}s`);
 
     interaction.reply({
       embeds: [timeStudiedEmbed],
       components: [],
     });
-    console.log('/totaltime executed')
+    console.log("/totaltime executed");
   },
 };

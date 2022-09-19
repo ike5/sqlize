@@ -1,14 +1,17 @@
 /**
  * Lists all check-ins
  */
-const { SlashCommandBuilder } = require('discord.js');
-const { db } = require('../modules/initialize-models.js');
+const { SlashCommandBuilder } = require("discord.js");
+const { db } = require("../modules/initialize-models.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('list')
-    .setDescription('Lists all check-ins'),
+    .setName("list")
+    .setDescription("Lists all check-ins"),
   async execute(interaction) {
+    // validate user
+    require("../modules/validate-user")(interaction);
+
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id
     );
@@ -51,8 +54,8 @@ module.exports = {
         });
 
         // Get time posted
-        let date = new Date(element.ci_timestamp).toLocaleDateString('en-US');
-        let time = new Date(element.ci_timestamp).toLocaleTimeString('en-US');
+        let date = new Date(element.ci_timestamp).toLocaleDateString("en-US");
+        let time = new Date(element.ci_timestamp).toLocaleTimeString("en-US");
         list += `${date} *${time}* ${l}\n`;
       });
 

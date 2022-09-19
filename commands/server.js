@@ -8,10 +8,13 @@ module.exports = {
     .setName("server")
     .setDescription("Gets the server info"),
   async execute(interaction) {
+    // validate user
+    require("../modules/validate-user")(interaction);
+    
     await interaction.reply({
       content: `Server name: ${interaction.guild.name}`,
       ephemeral: true,
     });
-    console.log('/server executed')
+    console.log("/server executed");
   },
 };

@@ -1,13 +1,16 @@
 /**
  * Shows all users including bots and idle users
  */
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('showallusers')
-    .setDescription('Shows all users and bots with their statii'),
+    .setName("showallusers")
+    .setDescription("Shows all users and bots with their statii"),
   async execute(interaction) {
+    // validate user
+    require("../modules/validate-user")(interaction);
+
     let allMembers = await interaction.guild.members.fetch();
     let onlineUsers = allMembers.filter((member) => member.presence);
 
@@ -20,21 +23,21 @@ module.exports = {
       };
     });
 
-    let online = '```type\tstatus\tusername\n';
-    online += '====\t======\t========\n';
+    let online = "```type\tstatus\tusername\n";
+    online += "====\t======\t========\n";
     memberMap.forEach((element) => {
-      let botOrUser = 'user';
+      let botOrUser = "user";
       if (element.bot === true) {
-        botOrUser = 'BOT';
+        botOrUser = "BOT";
       }
       online += `${botOrUser.padEnd(8)}${element.status.padEnd(6)}\t${
         element.name
       }\n`;
     });
 
-    online += '```';
+    online += "```";
 
     interaction.reply(online);
-    console.log("/showallusers executed")
+    console.log("/showallusers executed");
   },
 };

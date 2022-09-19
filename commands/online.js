@@ -1,13 +1,16 @@
 /**
  * Shows all users who are currently online. Excludes bots
  */
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('online')
-    .setDescription('Finds all users who are currently online. Excludes bots.'),
+    .setName("online")
+    .setDescription("Finds all users who are currently online. Excludes bots."),
   async execute(interaction) {
+    // validate user
+    require("../modules/validate-user")(interaction);
+
     let allMembers = await interaction.guild.members.fetch();
     let onlineUsers = allMembers.filter((member) => member.presence);
 
@@ -20,13 +23,13 @@ module.exports = {
       };
     });
 
-    let online = 'status\t\tusername\n-------\t\t-----------\n';
+    let online = "status\t\tusername\n-------\t\t-----------\n";
     memberMap.forEach((element) => {
-      if (element.status === 'online' && element.bot === false) {
+      if (element.status === "online" && element.bot === false) {
         online += `${element.status}\t\t${element.name}\n`;
       }
     });
     interaction.reply(online);
-    console.log("/online executed")
+    console.log("/online executed");
   },
 };

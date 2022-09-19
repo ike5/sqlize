@@ -35,8 +35,4 @@ module.exports = async (interaction) => {
     }
   );
 
-  Promise.all([db.User.findByPk(userId)]).then((member) => {
-    member[0].reload();
-    member[0].save();
-  });
 };
