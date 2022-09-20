@@ -66,9 +66,11 @@ module.exports = {
       const user = await db.User.findByPk(userId);
       const userData = JSON.parse(user.getDataValue("user_data"));
       userData.user.total_checkins += 1;
+
       // Set 'checked-in' value to TRUE
       userData.user.checked_in = true;
-      // Set friends that are currently checked in
+
+      // Populate friends[] that are currently checked in
       for (let i = 0; i < memberMap.length; i++) {
         memberMap[i];
         const index = userData.user.friends.findIndex(
@@ -79,9 +81,9 @@ module.exports = {
             name: memberMap[i].name,
             id: memberMap[i].id,
           });
+          await require("../modules/add-user")(memberMap[i].id, memberMap[i].name);
         }
       }
-
 
       await db.User.update(
         { user_data: JSON.stringify(userData) },
@@ -91,7 +93,6 @@ module.exports = {
           },
         }
       );
-      // console.log(userData.user);
 
       // Build string to display on Discord publicly
       // Changing the position of interaction.user here can break the button substring() method
