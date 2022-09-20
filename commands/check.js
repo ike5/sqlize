@@ -16,7 +16,7 @@ module.exports = {
     .setDescription("Command to check-in"),
   async execute(interaction) {
     // validate user
-    require("../modules/validate-user")(interaction);
+    await require("../modules/validate-user")(interaction);
 
     const ci_option = interaction.options.getString("description");
     const interactionUser = await interaction.guild.members.fetch(
@@ -36,6 +36,7 @@ module.exports = {
         .setStyle(ButtonStyle.Primary)
     );
 
+    // FIXME: Cannot create a Log without a User constraint
     try {
       // Create a Log entry
       const log_entry = await db.Log.create({
@@ -44,6 +45,22 @@ module.exports = {
         ci_timestamp: new Date().getTime(),
         UserDiscordId: userId,
       });
+
+      // Update user check-in amount
+      const user = await db.User.findByPk(userId);
+      const userData = JSON.parse(user.getDataValue("user_data"));
+      userData.user.total_checkins += 1;
+      await db.User.update(
+        { user_data: JSON.stringify(userData) },
+        {
+          where: {
+            discordId: userId,
+          },
+        }
+      );
+      console.log(userData.user);
+
+      // validate check-in trophies
 
       // Build string to display on Discord publicly
       // Changing the position of interaction.user here can break the button substring() method
