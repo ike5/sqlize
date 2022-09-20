@@ -1,6 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
-const { userData } = require("../modules/token-system");
+const { userData } = require("../modules/user-data");
 class User extends Model {
   static associate(models) {
     this.hasMany(models.Log);

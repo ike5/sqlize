@@ -7,7 +7,7 @@ module.exports = async (interaction) => {
   const userName = interactionUser.user.username;
   const userId = interactionUser.id;
 
-  const { userData } = require("../modules/token-system");
+  const { userData } = require("../modules/user-data");
 
   const ud = Object.assign(userData);
   ud.user.discord_data.discordId = userId;

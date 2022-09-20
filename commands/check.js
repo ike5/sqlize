@@ -25,8 +25,8 @@ module.exports = {
 
     const userName = interactionUser.user.username; // use this instead of an object
     const userId = interactionUser.id;
-    console.log(`Username: ${userName}`);
-    console.log(`UserId: ${userId}`);
+    // console.log(`Username: ${userName}`);
+    // console.log(`UserId: ${userId}`);
 
     // Button used for CHECKOUT
     const row = new ActionRowBuilder().addComponents(
@@ -45,10 +45,17 @@ module.exports = {
         UserDiscordId: userId,
       });
 
+      // 1) List online friends
+      // 2) Increment # of check ins with them
+      // 3) Log check in time with that friend (good in case forget to check out)
+      // 4) When checking out, calculate total time with that friend 
+
       // Update user check-in amount
       const user = await db.User.findByPk(userId);
       const userData = JSON.parse(user.getDataValue("user_data"));
       userData.user.total_checkins += 1;
+      // Set 'checked-in' value to TRUE
+      
       await db.User.update(
         { user_data: JSON.stringify(userData) },
         {
