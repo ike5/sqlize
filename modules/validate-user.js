@@ -22,7 +22,4 @@ module.exports = async (interaction) => {
       user_data: JSON.stringify(ud),
     },
   });
-
-  //TEST
-  console.log(user[0])
 };

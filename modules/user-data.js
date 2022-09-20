@@ -39,7 +39,7 @@ const userData = {
     anniversary: "date",
     avatar: [],
     challenges: [],
-    check_ins: 0,
+    checked_in: false,
     class: {
       class_name: "",
       class_level: 0,
@@ -52,17 +52,7 @@ const userData = {
       date_joined: "",
     },
     emotes: [],
-    friends: [
-      {
-        set() {
-          this.name = "Jon";
-        },
-        name: "",
-        num_times_chat_with: 0,
-        time_studied_together: 0,
-        num_times_studied_together: 0,
-      },
-    ],
+    friends: [],
     golden_ink_drops: 0,
     is_currently_online: false,
     last_checkin_id: "",

@@ -3,11 +3,11 @@ const {
   Collection,
   GatewayIntentBits,
   EmbedBuilder,
-} = require('discord.js');
-const fs = require('node:fs');
-const path = require('node:path');
-const { token } = require('./config.json');
-const { db } = require('./modules/initialize-models');
+} = require("discord.js");
+const fs = require("node:fs");
+const path = require("node:path");
+const { token } = require("./config.json");
+const { db } = require("./modules/initialize-models");
 
 // Set Discord intents for client
 const client = new Client({
@@ -24,10 +24,10 @@ const client = new Client({
 client.commands = new Collection();
 
 // Reading command files
-const commandsPath = path.join(__dirname, 'commands');
+const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs
   .readdirSync(commandsPath)
-  .filter((file) => file.endsWith('.js'));
+  .filter((file) => file.endsWith(".js"));
 
 // Map command files to command names
 for (const file of commandFiles) {
@@ -37,10 +37,10 @@ for (const file of commandFiles) {
 }
 
 // Reading event files
-const eventsPath = path.join(__dirname, 'events');
+const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs
   .readdirSync(eventsPath)
-  .filter((file) => file.endsWith('.js'));
+  .filter((file) => file.endsWith(".js"));
 
 for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
@@ -55,7 +55,7 @@ for (const file of eventFiles) {
 /**
  * Slash command interactions
  */
-client.on('interactionCreate', async (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
 
@@ -68,7 +68,7 @@ client.on('interactionCreate', async (interaction) => {
 
     // display an ephemeral message to user
     await interaction.reply({
-      content: 'There was an error while executing this command',
+      content: "There was an error while executing this command",
       ephemeral: true,
     });
   }
@@ -77,14 +77,14 @@ client.on('interactionCreate', async (interaction) => {
 /**
  * Button interactions
  */
-client.on('interactionCreate', async (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
 
   const { customId } = interaction;
   console.log(customId);
 
   //TODO: Refactor button events such as 'checkout' to the events folder
-  if (customId === 'checkout') {
+  if (customId === "checkout") {
     console.log(interaction.message.content);
 
     // Cross-checks user id of person who pressed the button
@@ -95,12 +95,26 @@ client.on('interactionCreate', async (interaction) => {
         where: {
           UserDiscordId: interaction.user.id,
         },
-        order: [['createdAt', 'DESC']],
+        order: [["createdAt", "DESC"]],
       });
 
-      previousCheckin.setDataValue('co_timestamp', new Date().getTime());
-      previousCheckin.reload(); // May not be necessary
-      previousCheckin.save();
+      previousCheckin.setDataValue("co_timestamp", new Date().getTime());
+      const discordId = previousCheckin.getDataValue("UserDiscordId");
+    
+
+      const userdata = await db.User.findByPk(discordId);
+      const user_data = JSON.parse(userdata.getDataValue("user_data"));
+
+      // Update user is no longer checked in
+      user_data.user.checked_in = false;
+      await db.User.update(
+        { user_data: this.user_data },
+        {
+          where: {
+            discordId: this.discordId,
+          },
+        }
+      );
 
       let checkin = previousCheckin.ci_description;
       let parsedCheckinArray = JSON.parse(checkin);
@@ -120,13 +134,16 @@ client.on('interactionCreate', async (interaction) => {
 
       // Create embed
       const timeStudiedEmbed = new EmbedBuilder()
-        .setTitle('Time studied')
+        .setTitle("Time studied")
         .setDescription(`${hours}h:${minutes}m:${seconds}s`);
 
       interaction.update({
         embeds: [timeStudiedEmbed],
         components: [],
       });
+
+
+      console.log(user_data)
     } else {
       interaction.reply({
         content: `You can't check-out someone else!`,

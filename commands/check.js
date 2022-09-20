@@ -48,14 +48,41 @@ module.exports = {
       // 1) List online friends
       // 2) Increment # of check ins with them
       // 3) Log check in time with that friend (good in case forget to check out)
-      // 4) When checking out, calculate total time with that friend 
+      // 4) When checking out, calculate total time with that friend
+      let allMembers = await interaction.guild.members.fetch();
+      let onlineUsers = allMembers.filter((member) => member.presence);
+
+      // Get bot flag
+      let memberMap = onlineUsers.map((m) => {
+        return {
+          bot: m.user.bot,
+          status: m.presence.status,
+          name: m.user.username,
+          id: m.user.id,
+        };
+      });
 
       // Update user check-in amount
       const user = await db.User.findByPk(userId);
       const userData = JSON.parse(user.getDataValue("user_data"));
       userData.user.total_checkins += 1;
       // Set 'checked-in' value to TRUE
-      
+      userData.user.checked_in = true;
+      // Set friends that are currently checked in
+      for (let i = 0; i < memberMap.length; i++) {
+        memberMap[i];
+        const index = userData.user.friends.findIndex(
+          (object) => object.id === memberMap[i].id
+        );
+        if (index === -1) {
+          userData.user.friends.push({
+            name: memberMap[i].name,
+            id: memberMap[i].id,
+          });
+        }
+      }
+
+
       await db.User.update(
         { user_data: JSON.stringify(userData) },
         {
@@ -64,9 +91,7 @@ module.exports = {
           },
         }
       );
-      console.log(userData.user);
-
-      // validate check-in trophies
+      // console.log(userData.user);
 
       // Build string to display on Discord publicly
       // Changing the position of interaction.user here can break the button substring() method
