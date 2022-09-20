@@ -127,9 +127,6 @@ client.on('interactionCreate', async (interaction) => {
         embeds: [timeStudiedEmbed],
         components: [],
       });
-
-      // console.log(interaction.message.id);
-      // let lastmsg = interaction.message.interaction.id;
     } else {
       interaction.reply({
         content: `You can't check-out someone else!`,

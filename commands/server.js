@@ -9,7 +9,7 @@ module.exports = {
     .setDescription("Gets the server info"),
   async execute(interaction) {
     // validate user
-    require("../modules/validate-user")(interaction);
+    await require("../modules/validate-user")(interaction);
     
     await interaction.reply({
       content: `Server name: ${interaction.guild.name}`,

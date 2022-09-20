@@ -36,7 +36,6 @@ module.exports = {
         .setStyle(ButtonStyle.Primary)
     );
 
-    // FIXME: Cannot create a Log without a User constraint
     try {
       // Create a Log entry
       const log_entry = await db.Log.create({

@@ -10,7 +10,7 @@ module.exports = {
     .setDescription("Shows all your check-ins"),
   async execute(interaction) {
     // validate user
-    require("../modules/validate-user")(interaction);
+    await require("../modules/validate-user")(interaction);
     
     // Get logs for user
     const amount = await db.Log.count({

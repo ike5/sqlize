@@ -11,7 +11,7 @@ module.exports = {
     .setDescription("Gets total time studied"),
   async execute(interaction) {
     // validate user
-    require("../modules/validate-user")(interaction);
+    await require("../modules/validate-user")(interaction);
 
     const all_logs = await db.Log.findAll({
       where: {

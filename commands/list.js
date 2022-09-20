@@ -10,7 +10,7 @@ module.exports = {
     .setDescription("Lists all check-ins"),
   async execute(interaction) {
     // validate user
-    require("../modules/validate-user")(interaction);
+    await require("../modules/validate-user")(interaction);
 
     const interactionUser = await interaction.guild.members.fetch(
       interaction.user.id

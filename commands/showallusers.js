@@ -9,7 +9,7 @@ module.exports = {
     .setDescription("Shows all users and bots with their statii"),
   async execute(interaction) {
     // validate user
-    require("../modules/validate-user")(interaction);
+    await require("../modules/validate-user")(interaction);
 
     let allMembers = await interaction.guild.members.fetch();
     let onlineUsers = allMembers.filter((member) => member.presence);
